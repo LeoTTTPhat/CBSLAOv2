@@ -11,13 +11,13 @@
   result/.style={draw=black!60, rounded corners=2pt, thick, align=center,
                  minimum width=34mm, minimum height=12mm, fill=black!3},
   hard/.style={result, fill=red!7, draw=red!60!black},
-  pos/.style={result, fill=green!8, draw=green!45!black},
+  poly/.style={result, fill=green!8, draw=green!45!black},
   gap/.style={result, fill=orange!10, draw=orange!65!black},
   arrow/.style={->, thick, draw=black!65}
 ]
 \node[hard] (knapsack) {0/1 Knapsack\\$\Rightarrow$ NP-hard\\Thm.~\ref{thm:hardness}};
 \node[hard, right=of knapsack] (coverage) {Max-$k$-Coverage\\$\Rightarrow$ $(1-1/e+\varepsilon)$ hard\\Thm.~\ref{thm:inapprox}};
-\node[pos, right=of coverage] (approx) {Offline greedy\\$(1-1/e)$ guarantee\\Thm.~\ref{thm:approx}};
+\node[poly, right=of coverage] (approx) {Offline greedy\\$(1-1/e)$ guarantee\\Thm.~\ref{thm:approx}};
 \node[gap, below=of coverage] (gap) {Adaptivity gap\\$\ge 4/3$, $\le$ constant\\Lemma~\ref{lem:adaptivity-gap}};
 \draw[arrow] (knapsack) -- node[above]{exact} (coverage);
 \draw[arrow] (coverage) -- node[above]{tight up to $\varepsilon$} (approx);

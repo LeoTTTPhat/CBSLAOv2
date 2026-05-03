@@ -105,7 +105,7 @@ $\eta$. The full procedure is given in Algorithm~\ref{alg:cbuc}.
   font=\small,
   >=Latex,
   node distance=9mm and 11mm,
-  step/.style={draw=black!60, rounded corners=2pt, thick, align=center,
+  stage/.style={draw=black!60, rounded corners=2pt, thick, align=center,
                minimum width=34mm, minimum height=11mm, fill=black!3},
   safe/.style={draw=blue!60!black, rounded corners=2pt, thick,
                align=center, minimum width=35mm, minimum height=11mm,
@@ -116,11 +116,11 @@ $\eta$. The full procedure is given in Algorithm~\ref{alg:cbuc}.
   arrow/.style={->, thick, draw=black!70}
 ]
 \node[safe] (shrink) {Shrink budgets\\$B',T'$ by tail margin};
-\node[step, right=of shrink] (stats) {Maintain estimates\\$\hat c_i,\hat\ell_i,\hat u_i,N_i$};
+\node[stage, right=of shrink] (stats) {Maintain estimates\\$\hat c_i,\hat\ell_i,\hat u_i,N_i$};
 \node[safe, right=of stats] (feasible) {Feasible set\\$\hat c_i+\mathrm{rad}_i\le B_t$\\$\hat\ell_i+\mathrm{rad}_i\le T_t$};
-\node[step, below=of feasible] (score) {Rank candidates\\utility-per-cost UCB};
-\node[step, left=of score] (invoke) {Invoke selected tool\\observe $(c,\ell,u)$};
-\node[step, left=of invoke] (update) {Update estimates\\and remaining budgets};
+\node[stage, below=of feasible] (score) {Rank candidates\\utility-per-cost UCB};
+\node[stage, left=of score] (invoke) {Invoke selected tool\\observe $(c,\ell,u)$};
+\node[stage, left=of invoke] (update) {Update estimates\\and remaining budgets};
 \node[stop, below=of score] (halt) {$\mathsf{STOP}$};
 \draw[arrow] (shrink) -- (stats);
 \draw[arrow] (stats) -- (feasible);
