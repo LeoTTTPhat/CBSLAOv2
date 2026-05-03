@@ -127,6 +127,22 @@ constraint, distinguishing the result from generic
 stochastic-knapsack hardness.
 \end{remark}
 
+\begin{remark}[Strict versus fuzzy schema typing]
+\label{rem:fuzzy-schema-lower-bound}
+The reduction deliberately uses \emph{strict} schema typing: each
+output type $\tau_u$ encodes exact incidence of an element $u$ in a
+set $S_j$. This is appropriate for the lower bound but should not be
+read as modelling fuzzy MCP/OpenAPI registries directly. If fuzzy
+matching is implemented as a deterministic thresholded compatibility
+relation, the same construction survives by assigning incidence edges
+similarity $1$ and non-incidence edges similarity $0$, so the
+$(1-1/e+\varepsilon)$ barrier does not degrade gracefully. If,
+instead, fuzzy matching is probabilistic, calibrated, or allowed to
+return false positives with nonzero utility, the present reduction no
+longer pins down the approximation threshold; a separate lower bound
+for probabilistic type compatibility would be needed.
+\end{remark}
+
 \begin{corollary}[Trivial-exact inapproximability, for completeness]
 \label{cor:inap-trivial}
 Unless $\mathrm{P} = \mathrm{NP}$, no polynomial-time algorithm returns

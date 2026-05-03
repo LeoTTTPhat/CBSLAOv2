@@ -206,6 +206,14 @@ $11.9\%$. Thus \CBUC~is best viewed as the high-assurance point on the
 frontier. A production system with hard per-user budget caps should
 prefer \CBUC~or pre-check UCB; a batch/offline setting that can
 tolerate occasional budget spillover may prefer Lagrangian control.
+The offline guarantee in Theorem~\ref{thm:approx} is consistent with
+this empirical picture rather than contradicting it: $(1-1/e)\cdot
+0.806 \approx 0.509$, so the observed \CBUC~utility of $0.587$ is
+above the worst-case offline approximation level relative to the
+Lagrangian utility proxy, while still representing a steep
+$27\%$ relative reduction. The theorem explains why such a utility
+loss is plausible in a safety-first policy; it does not remove the
+deployment trade-off.
 
 \subsection{Ablation studies}
 \label{sec:ablations-summary}
