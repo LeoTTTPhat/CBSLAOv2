@@ -1,0 +1,28 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We gave a formal statement of the cost- and SLA-bounded orchestration
+problem for LLM-agent tool composition (\CBSLAO), proved it is
+NP-hard already in the deterministic-cost case, and presented
+\CBUC~--- an online algorithm whose regret against the non-adaptive
+chance-constrained feasible oracle we bound via a four-lemma
+derivation (two-resource empirical-Bernstein concentration;
+feasibility preservation under budget shrinkage; Lagrangian reduction
+to \BwK; \BwK-style decomposition), with a heavy-tail corollary
+carrying the same rate up to a $\sqrt{\log T}$ factor under
+CVaR-based feasibility. Against a constraint-aware comparison that
+includes Lagrangian primal-dual, CVaR-\BwK, a deterministic pre-check
+UCB, and a non-adaptive chance-constrained knapsack oracle, \CBUC~is
+the only policy to simultaneously keep budget-overrun and
+deadline-miss below $2\%$ across the extended sweep. The main
+empirical lesson is a frontier, not a free lunch: \CBUC~is the
+conservative high-assurance point, while Lagrangian and pre-check
+baselines recover utility at the cost of higher budget risk. The
+principal limitations of the current work are the synthetic
+evaluation, the Markovian regret model, hard schema typing, and the
+lack of a heavy-tail theorem for Pareto-$\alpha \in (1,2]$ cost.
+Public trace replay, contextual-bandit control, and robust heavy-tail
+concentration are the most important next steps.
+
+\subsubsection*{Acknowledgements.}
+Redacted for review.

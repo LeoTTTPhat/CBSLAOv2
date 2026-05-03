@@ -1,0 +1,40 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools,graphicx,booktabs,multirow,array}
+\usepackage[font=small]{caption}
+\graphicspath{{figures/}}
+\usepackage{xcolor}\usepackage[colorlinks=true]{hyperref}\usepackage{url}
+\newcommand{\CBSLAO}{\textsc{CBSLAO}}
+\newcommand{\CBUC}{\textsc{CBUC}}
+\newcommand{\BwK}{\textsc{BwK}}
+\newcommand{\ReAct}{\textsc{ReAct}}
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\tOh}{\widetilde{\mathcal{O}}}
+\newcommand{\Ex}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newtheorem{theorem}{Theorem}\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}\newtheorem{definition}{Definition}
+% Stub algorithm as a figure-like float
+\usepackage{float}
+\newfloat{algorithm}{t}{loa}[section]
+\floatname{algorithm}{Algorithm}
+\providecommand{\State}{}
+\providecommand{\Require}[1]{\textbf{Require:} #1\\}
+\providecommand{\Comment}[1]{\quad\textit{// #1}}
+\providecommand{\EndIf}{}
+\providecommand{\EndWhile}{}
+\providecommand{\Return}{\textbf{return}~}
+\providecommand{\If}[1]{\textbf{if}~#1~\textbf{then}}
+\providecommand{\While}[1]{\textbf{while}~#1~\textbf{do}}
+\newenvironment{algorithmic}[1][]{\par\small\obeylines}{\par}
+\begin{document}
+\section*{Full revised paper syntax check}
+\input{sections/algorithm}
+\input{sections/evaluation}
+\input{sections/threats}
+\input{sections/limitations}
+\input{sections/conclusion}
+\input{sections/appendix}
+\end{document}

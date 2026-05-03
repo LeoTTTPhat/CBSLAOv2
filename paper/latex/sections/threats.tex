@@ -1,0 +1,73 @@
+\section{Threats to Validity}
+\label{sec:threats}
+
+\paragraph{Construct validity.}
+The evaluation is a \emph{controlled synthetic simulation}, not a
+deployment against live LLM APIs. We do not claim that the absolute
+utility numbers reflect what a real LLM agent would achieve on
+ToolBench or $\tau$-bench. What we claim is that under the simulated
+cost/latency distributions, the ordering of policies is consistent,
+and the qualitative safety gap (order of magnitude in overrun rate) is
+robust across the sweep.
+
+\paragraph{Internal validity.}
+Confidence parameters $\alpha = 1.0$, $\beta = 1.5$, $\gamma = 1.5$
+are fixed across all cells and were chosen before the final sweep; we
+do not report post-hoc tuning. A one-at-a-time sensitivity sweep over
+all three parameters (Appendix~\ref{app:abl-abg}) confirms that the
+budget-overrun rate remains identically zero across the grid. The only
+intentional sensitivity is the $z$ sweep over \CBUC~variants, which is
+itself the object of study.
+
+\paragraph{External validity.}
+Cost distributions are Pareto-parameterised; real LLM API pricing is
+step-functioned by token count and partially deterministic per-call.
+Latency is Gaussian; real-world latency is often heavy-tailed with
+occasional timeouts. Our calibrated benchmark replay
+(Appendix~\ref{app:abl-replay}), parameterised to published summary
+statistics of ToolBench, $\tau$-bench, and BFCL, shows that the
+qualitative safety gap persists under these workload profiles;
+however, a full replay harness over raw API traces remains future work
+and is explicitly flagged as \emph{requires empirical validation}
+before any production claim.
+
+\paragraph{Chance-constraint approximation.}
+The sub-Gaussian correction in \S\ref{sec:algorithm} is conservative
+for heavy-tailed cost; under Pareto tails with $\alpha \le 2$ the
+variance is infinite, so the theorem's sub-Gaussian proxy is formally
+inapplicable. The $\alpha=1.5$ rows in Table~\ref{tab:tail} are
+therefore an empirical robustness stress test, not covered theory.
+\CBUC's low overrun in those rows appears to come from the combination
+of chance-constraint stopping and conservative feasibility checks, not
+from a valid Gaussian tail model. Replacing the Gaussian $z$ with a
+Chernoff-style, median-of-means, or robust VaR/CVaR correction is
+required before claiming theoretical safety under heavy tails.
+
+\paragraph{Oracle definition.}
+Our regret is measured against the informed \emph{non-adaptive}
+oracle. The adaptivity-gap remark (Remark~\ref{rem:gap}) applies only
+under additive-utility stochastic-knapsack conditions; outside those
+conditions, adaptive-history dependence remains an open modelling gap.
+
+\paragraph{Statistical significance.}
+Table~\ref{tab:headline} reports approximate $95\%$ confidence
+intervals, which are sufficient for the large safety gaps but still
+informal for utility comparisons. A paired-seed Wilcoxon signed-rank
+test across workload cells should be added before camera-ready,
+especially for the smaller utility gaps among pre-check UCB,
+CVaR-\BwK, \BwK-vanilla, and \CBUC~variants. The ablation studies
+(Appendix~\ref{app:ablations}) further corroborate these findings
+across $1{,}920$ additional replicate rows.
+
+\paragraph{Baseline strength.}
+Concerns that \ReAct-capped alone is an insufficient comparator are
+legitimate for an algorithmic-efficacy claim. We therefore include
+four constraint-aware baselines drawn from standard families: a
+Lagrangian primal-dual safe-CMDP-style controller, a CVaR-aware \BwK,
+a deterministic pre-check UCB guarded greedy, and a non-adaptive
+chance-constrained knapsack oracle
+(Table~\ref{tab:headline}). \CBUC~remains the only policy in this
+extended set to keep both constraint-violation rates below $2\%$
+uniformly across the sweep. The remaining utility gap to the
+Lagrangian baseline is reported as a real deployment trade-off rather
+than hidden by the safety aggregate.

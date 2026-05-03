@@ -1,0 +1,63 @@
+\section{Problem Formulation}
+\label{sec:formulation}
+
+\subsection{Setting}
+Let $\mathcal{S} = \{s_1, \dots, s_n\}$ be a \emph{tool pool}. Each
+tool~$s_i$ exposes a schema
+$\sigma_i = (\mathsf{In}_i, \mathsf{Out}_i)$ over a common type
+universe~$\mathcal{U}$. A \emph{task} is a tuple
+$\tau = (\mathsf{goal}, q, B, T, \delta)$ where $q$ is a query,
+$B \in \mathbb{R}_{>0}$ is a monetary/token budget,
+$T \in \mathbb{R}_{>0}$ is a wall-clock deadline, and
+$\delta \in (0,1)$ is an acceptable violation probability.
+
+At each decision epoch $t = 1, 2, \dots$, the agent holds a state
+$h_t \in \mathcal{H}$ (history of prior calls and observations) and
+selects either a tool $s_i$ with a call payload or a $\mathsf{STOP}$
+action emitting a final answer. An invocation of $s_i$ draws
+\begin{itemize}
+  \item cost $c_{i,t} \sim \mathcal{D}_i^c$;
+  \item latency $\ell_{i,t} \sim \mathcal{D}_i^\ell$;
+  \item an observation $o_{i,t}$ that updates the state:
+    $h_{t+1} = h_t \oplus (s_i, o_{i,t})$.
+\end{itemize}
+A \emph{utility function} $U: \mathcal{H} \to [0,1]$ measures the
+expected quality of the final answer given the history at
+$\mathsf{STOP}$. The regret analysis in \S\ref{sec:algorithm}
+restricts attention to the Markovian case
+--- $\mathcal{D}_i^c(h_t) = \mathcal{D}_i^c(\phi(h_t))$ for some
+feature map $\phi$ --- to make the analysis tractable; this is a
+technical restriction, not a claim that production agents are
+Markovian.
+
+\subsection{Policy classes}
+\begin{description}
+  \item[Non-adaptive policy]
+    ($\Pi_{\mathrm{non}}$): commits to an ordered subset
+    $A \subseteq \mathcal{S}$ before execution.
+  \item[Semi-adaptive policy]
+    ($\Pi_{\mathrm{semi}}$): commits to an ordered subset but may
+    truncate early on observed budget consumption.
+  \item[Adaptive policy]
+    ($\Pi_{\mathrm{ad}}$): selects the next tool based on the full
+    history $h_t$.
+\end{description}
+Clearly
+$\Pi_{\mathrm{non}} \subseteq \Pi_{\mathrm{semi}} \subseteq \Pi_{\mathrm{ad}}$.
+
+\subsection{Objective}
+\paragraph{Problem (\CBSLAO-\textsc{opt}).}
+Given $(\mathcal{S}, \tau)$, find
+\begin{align*}
+  \pi^\star \in{}&
+  \argmax_{\pi \in \Pi_{\mathrm{ad}}}\;
+  \Ex_\pi\!\bigl[U(h_{\mathsf{STOP}})\bigr] \\
+  \text{s.t.}\quad&
+  \Prob_\pi\!\Bigl[\sum_{t=1}^{|\pi|} c_{i_t, t} \le B\Bigr] \ge 1 - \delta,\quad
+  \Prob_\pi\!\Bigl[\sum_{t=1}^{|\pi|} \ell_{i_t, t} \le T\Bigr] \ge 1 - \delta.
+\end{align*}
+
+\paragraph{Problem (\CBSLAO-\textsc{dec}).}
+Given $(\mathcal{S}, \tau, u^\star)$, decide whether there exists
+$\pi \in \Pi_{\mathrm{ad}}$ attaining
+$\Ex_\pi[U] \ge u^\star$ and satisfying both chance constraints.

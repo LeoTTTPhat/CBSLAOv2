@@ -1,0 +1,204 @@
+\section{Algorithm: \CBUC}
+\label{sec:algorithm}
+
+\CBUC~has two phases.
+\begin{enumerate}
+  \item \textbf{Offline pruning.} Filter $\mathcal{S}$ to the subset
+    $\mathcal{S}_q$ whose input schemas are type-compatible with the
+    query $q$ and, recursively, with the outputs of
+    already-included tools.
+  \item \textbf{Online sequencing.} Run a budget-aware UCB policy over
+    $\mathcal{S}_q$, stopping when the budget is estimated to be
+    exhausted at confidence $1-\delta$ or when the estimated marginal
+    utility of every remaining tool falls below a threshold $\eta$.
+\end{enumerate}
+
+\subsection{Offline pruning}
+Given a type universe $\mathcal{U}$ and schemas
+$\sigma_i = (\mathsf{In}_i, \mathsf{Out}_i) \in 2^{\mathcal{U}} \times 2^{\mathcal{U}}$, define the query type-closure $\mathsf{cl}(q)$:
+start with the types mentioned in~$q$, then iteratively add
+$\mathsf{Out}_i$ whenever $\mathsf{In}_i \subseteq \mathsf{cl}(q)$. Set
+$\mathcal{S}_q = \{s_i : \mathsf{In}_i \subseteq \mathsf{cl}(q)\}$.
+
+This pruning rule assumes hard schema typing: inputs and outputs are
+either present in $\mathcal{U}$ or absent. Real MCP/OpenAPI registries
+often expose partial schemas, fuzzy semantic types, optional fields,
+and natural-language descriptions. In such registries,
+$\mathsf{cl}(q)$ should be interpreted as a conservative typed core,
+not a complete discovery mechanism; extending \CBUC~to probabilistic
+type matching is outside the current proof and evaluation.
+
+\begin{proposition}[Completeness of offline pruning]
+\label{prop:prune}
+If a feasible non-adaptive policy $\pi \in \Pi_{\mathrm{non}}$ uses
+tool $s_i$, then $s_i \in \mathcal{S}_q$.
+\end{proposition}
+
+\begin{proof}
+By induction on call order and the definition of $\mathsf{cl}$. \qed
+\end{proof}
+
+\subsection{Online sequencing}
+
+Let $K = |\mathcal{S}_q|$. For each tool $s_i \in \mathcal{S}_q$
+maintain empirical mean cost $\hat{c}_i$, mean latency $\hat{\ell}_i$
+and mean marginal utility $\hat{u}_i$ from prior invocations (possibly
+across tasks). At round $t$ with remaining budget $B_t$ and remaining
+deadline $T_t$, compute for each feasible tool (satisfying
+$\hat{c}_i + \beta \sqrt{\log t / N_i} \le B_t$ and the analogous
+latency condition) the \emph{upper-confidence utility-per-cost}:
+\begin{equation}
+\label{eq:ucb}
+  \mathsf{UCB}_i(t)
+   \;=\;
+   \frac{\hat{u}_i + \alpha \sqrt{\log t / N_i}}
+        {\max\!\bigl(\hat{c}_i - \gamma \sqrt{\log t / N_i},\;
+                     c_{\min}\bigr)},
+\end{equation}
+where $\alpha, \beta, \gamma > 0$ are confidence-width parameters and
+$c_{\min}$ is a lower-bound prior on cost. Select
+$i_t = \argmax_i \mathsf{UCB}_i(t)$; return $\mathsf{STOP}$ if no tool is
+feasible or the selected tool's posterior marginal utility falls below
+$\eta$. The full procedure is given in Algorithm~\ref{alg:cbuc}.
+
+\begin{algorithm}[t]
+\caption{\CBUC: Cost-Budgeted Upper Confidence}
+\label{alg:cbuc}
+\begin{algorithmic}[1]
+\Require{Tool pool $\mathcal{S}$, task $\tau = (q, B, T, \delta)$,
+         parameters $\alpha, \beta, \gamma, \eta, z$}
+\State $\mathcal{S}_q \gets \{s_i : \mathsf{In}_i \subseteq \mathsf{cl}(q)\}$
+   \Comment{offline pruning}
+\State $B' \gets B - z\,\sigma_c \sqrt{T_{\text{guess}}}$ ;\quad
+       $T' \gets T - z\,\sigma_\ell \sqrt{T_{\text{guess}}}$
+   \Comment{chance-constraint correction}
+\State Initialise $\hat{c}_i, \hat{\ell}_i, \hat{u}_i, N_i$ for all
+       $s_i \in \mathcal{S}_q$
+\State $B_t \gets B'$ ;\quad $T_t \gets T'$ ;\quad $t \gets 1$
+\While{$t \le T_{\max}$}
+  \State $\mathcal{F} \gets \{i :
+     \hat{c}_i + \beta\sqrt{\log t / N_i} \le B_t
+     \;\land\;
+     \hat{\ell}_i + \beta\sqrt{\log t / N_i} \le T_t\}$
+  \If{$\mathcal{F} = \emptyset$}
+    \State \Return $\mathsf{STOP}$
+  \EndIf
+  \State $i_t \gets \argmax_{i \in \mathcal{F}}
+     \mathsf{UCB}_i(t)$ \Comment{Eq.~\ref{eq:ucb}}
+  \If{$\hat{u}_{i_t} < \eta$}
+    \State \Return $\mathsf{STOP}$
+  \EndIf
+  \State Invoke $s_{i_t}$; observe $c_{i_t}, \ell_{i_t}, u_{i_t}$
+  \State Update $\hat{c}_{i_t}, \hat{\ell}_{i_t},
+                \hat{u}_{i_t}, N_{i_t}$
+  \State $B_t \gets B_t - c_{i_t}$ ;\quad
+         $T_t \gets T_t - \ell_{i_t}$ ;\quad
+         $t \gets t + 1$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Regret bound}
+
+Let $\pi^\dagger_{\mathrm{CC}} \in \Pi_{\mathrm{non}}$ denote the best
+non-adaptive policy that is feasible in the chance-constrained sense,
+i.e.\ the optimal solution of the offline
+\emph{chance-constrained 0/1 knapsack}
+\[
+  \max_{x \in \{0,1\}^K}
+    \sum_i \mu_i x_i
+  \ \ \text{s.t.}\ \
+  \Prob\!\Bigl[\sum_i c_i x_i \le B\Bigr] \ge 1-\delta,\quad
+  \Prob\!\Bigl[\sum_i \ell_i x_i \le D\Bigr] \ge 1-\delta,
+\]
+and define
+$\mathsf{REG}(T) \;=\; T\,U(\pi^\dagger_{\mathrm{CC}}) - \Ex[\sum_{t=1}^{T} U(h_t)]$.
+The target is deliberately the non-adaptive CC oracle and \emph{not}
+the adaptive optimum; see Remark~\ref{rem:adaptivegap} for the gap
+discussion and \S\ref{sec:limitations} for the open problem.
+
+\begin{theorem}[Regret of \CBUC~under sub-Gaussian cost]
+\label{thm:regret}
+Assume
+(A1) per-arm costs, latencies, and marginal utilities are independent
+across rounds, bounded in $[0, M]$ and $\sigma^2$-sub-Gaussian;
+(A2) the minimum mean cost is bounded below by $c_{\min} > 0$;
+(A3) the chance-constraint level is $\delta \in (0, 1/2]$ and the
+safety multiplier is fixed at $z = \Phi^{-1}(1-\delta)$.
+Then \CBUC~played with empirical-Bernstein confidence widths
+$\alpha\sqrt{\log t/N_i}$, $\beta\sqrt{\log t/N_i}$,
+$\gamma\sqrt{\log t/N_i}$ attains, with probability at least
+$1 - \delta - K T^{-2}$,
+\[
+  \mathsf{REG}(T)
+   \;\le\; C_1 \sqrt{K T \log T}
+        \;+\; C_2\, z\, \sigma \sqrt{T}
+        \;+\; C_3,
+\]
+where $C_1, C_2, C_3$ are constants depending on $M, c_{\min}, \sigma$
+but not on $T$ or $K$. In $\tOh$-asymptotics, $\mathsf{REG}(T)
+ = \tOh(\sqrt{KT})$.
+\end{theorem}
+
+The proof is given in Appendix~\ref{app:proof} via a four-lemma
+layering (L1 two-resource empirical-Bernstein concentration;
+L2 feasibility preservation under budget shrinkage; L3 Lagrangian
+reduction to unconstrained primal--dual; L4 \BwK-style regret
+decomposition) rather than a direct \cite{bwk2018} citation, because
+the composition of the three individual moves is where the nontrivial
+steps — utility-per-cost ratio handling, two-resource coupling, and
+chance-constraint tightening — actually interact.
+
+\paragraph{Honest scope of the bound.}
+Theorem~\ref{thm:regret} assumes sub-Gaussian noise; the simulator
+draws Pareto cost with tail index $\alpha$ that may be $\le 2$, in
+which case the sub-Gaussian proxy is qualitatively wrong (infinite
+variance). Empirically, \CBUC's overrun rate remains below $2\%$ even
+in the Pareto-$1.5$ regime (Table~\ref{tab:headline}), but those rows
+are an empirical robustness stress test rather than evidence covered
+by the theorem. A theorem covering this regime requires replacing the
+sub-Gaussian correction with a tail-aware bound; see
+Corollary~\ref{cor:cvar} below.
+
+\begin{corollary}[Heavy-tailed cost: Chernoff / CVaR correction]
+\label{cor:cvar}
+Under (A1') per-arm costs belong to a distributional family
+$\mathcal{F}$ for which a data-dependent tail estimate
+$\widehat{\mathrm{CVaR}}_{\delta}(c_i)$ is uniformly consistent at rate
+$\Oh(\sqrt{\log t / N_i})$, and the safety-shrunk budget is taken as
+$B' = B - \sum_i \widehat{\mathrm{CVaR}}_{\delta}(c_i)$,
+\CBUC's chance-constraint guarantee $\Prob[\text{overrun}] \le \delta$
+is preserved, and the regret bound of Theorem~\ref{thm:regret} holds
+with the $C_2\, z\,\sigma\sqrt{T}$ term replaced by
+$C'_2\,\sqrt{T \log T}$.
+\end{corollary}
+
+The proof (Appendix~\ref{app:proof}) is obtained by repeating the L2
+feasibility-preservation step with the CVaR estimator in place of the
+Gaussian $z$-quantile, at the cost of an additional $\log T$ factor
+from the extreme-order-statistic concentration rate. The empirical
+counterpart of this corollary is the CVaR-\BwK~baseline in
+\S\ref{sec:evaluation}, which halves \BwK-vanilla's overrun rate under
+heavy Pareto tails without a theorem of its own.
+
+\begin{remark}[Adaptivity gap; open problem]
+\label{rem:adaptivegap}
+The bound targets the non-adaptive CC oracle. The adaptivity gap for
+stochastic knapsack with two resources and chance constraints is
+known to be a constant
+factor~\cite{dean2008stochastic} but, to our knowledge, no
+instance-adaptive tight bound has been proved for the two-resource
+chance-constrained variant studied here. On our simulator the
+empirical ratio of non-adaptive to informed-knapsack utility is
+$1.00 \pm 0.05$ (median $1.00$), indicating that for these instances
+the gap is effectively negligible. Nonetheless, deriving a
+distribution-free, instance-adaptive tight regret bound against the
+\emph{adaptive} oracle is stated as an open problem
+(\S\ref{sec:limitations}).
+\end{remark}
+
+\subsection{Complexity}
+Per round the selection step takes $\Oh(K \log K)$ time. Over $T$
+rounds the total cost is $\Oh(T K \log K)$ time and $\Oh(K)$ memory
+for running statistics. For realistic $K \le 10^4$ and $T \le 10^3$
+this overhead is negligible compared to any LLM call.

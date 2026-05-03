@@ -1,0 +1,125 @@
+% CBSLAO -- Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition
+% Target venue: ICSOC 2026 (research track, Springer LNCS)
+% Draft v0.2 -- sections are modular under ./sections/.
+%
+% Build: pdflatex main ; bibtex main ; pdflatex main ; pdflatex main
+% (Assumes llncs.cls and splncs04.bst are on TEXINPUTS.  See README.md.)
+\documentclass[runningheads]{llncs}
+
+% -------------------- Encoding & fonts --------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% -------------------- Math & symbols --------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{mathtools}
+
+% -------------------- Floats, graphics, tables --------------------
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{caption}
+\captionsetup{font=small}
+
+% -------------------- Algorithms --------------------
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% -------------------- Links, colour, misc --------------------
+\usepackage{xcolor}
+\usepackage[colorlinks=true,
+            linkcolor=blue!60!black,
+            citecolor=blue!60!black,
+            urlcolor=blue!60!black]{hyperref}
+\usepackage{url}
+
+% -------------------- Theorem-like environments --------------------
+% llncs defines \theorem, \lemma, \proposition, \corollary, \remark, \definition.
+% We add a conjecture environment.
+% \spnewtheorem{conjectureenv}[theorem]{Conjecture}{\bfseries}{\itshape}
+% \newenvironment{conjecture}{\begin{conjectureenv}}{\end{conjectureenv}}
+
+% -------------------- Author macros --------------------
+\newcommand{\CBSLAO}{\textsc{CBSLAO}}
+\newcommand{\CBUC}{\textsc{CBUC}}
+\newcommand{\BwK}{\textsc{BwK}}
+\newcommand{\ReAct}{\textsc{ReAct}}
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\tOh}{\widetilde{\mathcal{O}}}
+\newcommand{\Ex}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% -------------------- Title, authors --------------------
+\title{Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition}
+\titlerunning{CBSLAO}
+
+\author{Anonymous\inst{1}}
+\authorrunning{Anon.~et~al.}
+\institute{Anonymous Institution\\
+\email{anon@example.org}}
+
+% ============================================================
+\begin{document}
+\maketitle
+
+\begin{abstract}
+LLM-based agents increasingly orchestrate external tools and services
+to complete user tasks. A central but under-analysed problem is that
+mainstream agent controllers---\ReAct~loops, LangChain's
+\texttt{AgentExecutor}, the OpenAI Agents SDK, and AutoGen---invoke
+tools without formal cost or latency guarantees, routinely exceeding
+user-declared token budgets and service-level objective (SLO) deadlines.
+We formalise the \emph{Cost- and SLA-Bounded Agent Orchestration}
+(\CBSLAO) problem, in which an agent selects an adaptive sequence of
+tool invocations maximising expected utility subject to
+chance-constrained budget and deadline requirements. We prove that the
+decision version of \CBSLAO~is NP-hard by reduction from 0/1 Knapsack,
+even when cost distributions are degenerate point masses.
+We then present \CBUC~(\emph{Cost-Budgeted Upper Confidence}), an
+online algorithm that combines schema-type-based offline pruning with a
+budget-aware UCB selector. Under bounded sub-Gaussian cost and utility
+noise, \CBUC~attains $\tOh(\sqrt{KT})$ regret against the best
+feasible non-adaptive policy for $K$ arms over $T$ rounds.
+In an extended controlled simulator spanning $18$ workload cells,
+$20$ seeds per cell, and $11$ policies ($3{,}960$ replicate rows),
+\CBUC~cuts budget-overrun from $36.9\%$ (\ReAct-capped) and $28.9\%$
+(\BwK-vanilla) to $1.1\%$ and eliminates all deadline misses. This
+safety gain is not free: \CBUC's utility is $0.587$, compared with
+$0.806$ for a Lagrangian primal-dual baseline that still overruns
+budget in $23.1\%$ of runs. We therefore position \CBUC~as a
+conservative governance policy for settings where budget/SLO
+violations are expensive, not as a universally utility-optimal
+controller. All headline results are reproducible from a released
+simulator; no proprietary LLM API is required.
+\keywords{LLM agents \and service composition \and
+bounded rationality \and online learning \and chance constraints \and
+service-oriented computing.}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/formulation}
+\input{sections/hardness}
+\input{sections/algorithm}
+\input{sections/evaluation}
+\input{sections/threats}
+\input{sections/limitations}
+\input{sections/repro}
+\input{sections/conclusion}
+
+% -------------------- Bibliography --------------------
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+% -------------------- Appendix --------------------
+\appendix
+\input{sections/appendix}
+
+\end{document}

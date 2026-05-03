@@ -1,0 +1,22 @@
+| Policy | Sparsity | Overrun | Utility |
+|---|---|---|---|
+| bwk_vanilla | 0.1 | 0.033 | 0.755 |
+| bwk_vanilla | 0.25 | 0.133 | 0.917 |
+| bwk_vanilla | 0.5 | 0.067 | 0.981 |
+| bwk_vanilla | 0.75 | 0.200 | 0.998 |
+| bwk_vanilla | 1.0 | 0.067 | 1.000 |
+| cbuc | 0.1 | 0.000 | 0.437 |
+| cbuc | 0.25 | 0.000 | 0.791 |
+| cbuc | 0.5 | 0.000 | 0.940 |
+| cbuc | 0.75 | 0.000 | 0.996 |
+| cbuc | 1.0 | 0.000 | 0.999 |
+| cbuc_aggr | 0.1 | 0.000 | 0.387 |
+| cbuc_aggr | 0.25 | 0.000 | 0.775 |
+| cbuc_aggr | 0.5 | 0.000 | 0.979 |
+| cbuc_aggr | 0.75 | 0.000 | 0.998 |
+| cbuc_aggr | 1.0 | 0.000 | 0.998 |
+| react_capped | 0.1 | 0.200 | 0.754 |
+| react_capped | 0.25 | 0.133 | 0.867 |
+| react_capped | 0.5 | 0.033 | 0.983 |
+| react_capped | 0.75 | 0.133 | 0.996 |
+| react_capped | 1.0 | 0.067 | 1.000 |

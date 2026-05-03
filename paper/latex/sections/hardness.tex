@@ -1,0 +1,87 @@
+\section{Hardness}
+\label{sec:hardness}
+
+\subsection{NP-hardness of \CBSLAO-\textsc{dec}}
+
+\begin{theorem}[NP-hardness]
+\label{thm:hardness}
+\CBSLAO-\textsc{dec} is NP-hard, even when
+(i) all cost distributions $\mathcal{D}_i^c$ are degenerate point
+masses,
+(ii) latency is unconstrained ($T = \infty$),
+(iii) the utility function is additive across tool invocations,
+and (iv) the policy class is $\Pi_{\mathrm{non}}$.
+\end{theorem}
+
+\begin{proof}
+We reduce from the 0/1 Knapsack decision problem, which is NP-hard
+\cite{garey1979computers}.
+
+An instance of 0/1 Knapsack is
+$(w_1, \dots, w_n, v_1, \dots, v_n, W, V)$ with
+$w_i, v_i, W, V \in \mathbb{Z}_{\ge 0}$; we ask whether there exists
+$S \subseteq [n]$ with
+$\sum_{i \in S} w_i \le W$ and $\sum_{i \in S} v_i \ge V$.
+
+Construct a \CBSLAO~instance as follows. Let
+$\mathcal{S} = \{s_1, \dots, s_n\}$ with degenerate cost distributions
+$\mathcal{D}_i^c = \delta_{w_i}$ (point mass at~$w_i$). Let latency be
+zero and $T = \infty$. Define the utility as
+\[
+  U(h) \;=\; \min\!\Bigl\{1,\; \tfrac{1}{V}\sum_{i : s_i \in h} v_i\Bigr\}.
+\]
+Set $B = W$, $\delta = 0$, and $u^\star = 1$.
+
+Since costs are deterministic, the chance constraint reduces to a hard
+constraint $\sum_{i \in S} w_i \le W$. Since utility is
+saturating-additive and $u^\star = 1$, a policy achieves utility
+$\ge u^\star$ iff the chosen subset satisfies
+$\sum_{i \in S} v_i \ge V$. Any non-adaptive policy chooses a subset
+$S \subseteq [n]$. Therefore a \CBSLAO~policy achieving $u^\star = 1$
+within budget $B = W$ exists iff a knapsack solution of value $\ge V$
+within weight $\le W$ exists. The reduction is polynomial in input
+size.
+\qed
+\end{proof}
+
+\begin{remark}
+\label{rem:har}
+Because the reduction uses only $\Pi_{\mathrm{non}}$, we have
+\emph{a fortiori} hardness for $\Pi_{\mathrm{semi}}$ and
+$\Pi_{\mathrm{ad}}$. Moreover, the reduction is purely
+deterministic, so \CBSLAO-\textsc{dec} is NP-hard already in the
+deterministic regime --- stochasticity in real deployments can only
+make the problem harder.
+\end{remark}
+
+\subsection{Inapproximability}
+
+\begin{corollary}[Weak inapproximability]
+\label{cor:inap}
+Unless $\mathrm{P} = \mathrm{NP}$, no polynomial-time algorithm returns
+a feasible policy matching the optimum utility exactly for every
+\CBSLAO~instance.
+\end{corollary}
+
+\begin{remark}[Approximability]
+\label{rem:approx}
+Because utility is bounded in $[0,1]$ and the feasible region is
+down-closed under tool removal, a constant-factor approximation in the
+non-adaptive setting may be obtainable via a reduction to budgeted
+submodular maximisation, analogous to
+Sviridenko~\cite{sviridenko2004}. A tight characterisation is future
+work; we use this observation to motivate the greedy-offline phase of
+\CBUC~rather than claim a novel approximation result.
+\end{remark}
+
+\subsection{Adaptivity gap}
+
+\begin{remark}
+\label{rem:gap}
+Dean, Goemans \& Vondr\'{a}k~\cite{dean2008stochastic} show a constant
+adaptivity gap for stochastic knapsack in additive-utility settings.
+\CBSLAO~inherits this property only under the same structural
+conditions; outside that setting, we use the non-adaptive
+chance-constrained oracle as a conservative evaluation reference
+rather than claiming a general approximation to the adaptive optimum.
+\end{remark}

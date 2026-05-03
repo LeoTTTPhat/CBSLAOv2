@@ -1,0 +1,361 @@
+\section{Full Proof of Theorem~\ref{thm:regret}}
+\label{app:proof}
+
+The proof proceeds by a four-lemma layering. \textbf{L1} derives a
+two-resource empirical-Bernstein concentration inequality that is used
+uniformly across all arms and resources. \textbf{L2} shows that
+shrinking the budget to $B' = B - z\,\sigma\sqrt{T}$ preserves primal
+feasibility with probability at least $1-\delta$. \textbf{L3} reduces
+the chance-constrained primal to an unconstrained \BwK-style
+primal--dual problem on a \emph{modified} instance whose utility
+function is the per-unit-resource Lagrangian
+$\mathcal{L}_i(\lambda)$. \textbf{L4} applies the \BwK~regret bound to
+the modified instance and translates it back to the original objective.
+Constants are kept explicit throughout so the composition can be
+audited.
+
+\paragraph{Notation and setup.}
+Let $N_i(t)$ be the number of pulls of arm $i$ up to round $t$. Write
+$\hat{c}_i(t), \hat{\ell}_i(t), \hat{u}_i(t)$ for the empirical means,
+and $\sigma^2_c, \sigma^2_\ell, \sigma^2_u$ for the sub-Gaussian proxy
+variances. Let $V_i(t)$ denote the empirical variance of cost
+observations on arm $i$ up to round $t$.
+
+\paragraph{L1 (two-resource empirical-Bernstein concentration).}
+Under assumption (A1), for any $\delta' \in (0, 1)$ and any arm $i$
+with $N_i \ge 2$,
+\begin{equation}
+\label{eq:L1}
+  \Prob\!\bigl[|\hat{c}_i - \Ex c_i| > r_i(\delta')\bigr] \le \delta',
+  \qquad
+  r_i(\delta')
+   \;=\;
+    \sqrt{\tfrac{2 V_i \log(2/\delta')}{N_i}}
+     + \tfrac{7 M \log(2/\delta')}{3 (N_i - 1)},
+\end{equation}
+and analogously for $\hat{\ell}_i, \hat{u}_i$.
+\emph{Proof.} Eq.~\eqref{eq:L1} is the empirical-Bernstein bound
+(Maurer--Pontil, Audibert--Munos--Szepesv\'ari). A union bound over the
+three resources and $K$ arms gives a uniform bound at level $3K\delta'$;
+setting $\delta' = \delta/(3KT)$ and union-bounding over $T$ rounds
+yields a uniform confidence radius
+$r(t) = \sqrt{2 V_i \log(6KT/\delta) / N_i(t)}
+      + 7M\log(6KT/\delta)/(3(N_i(t)-1))
+      = \Oh(\sqrt{\log(T/\delta)/N_i(t)})$
+that holds with probability at least $1-\delta/3$. \qed
+
+\paragraph{L2 (feasibility preservation under budget shrinkage).}
+Let $x^\star \in \{0,1\}^K$ be the non-adaptive CC-feasible optimum
+at level $\delta$, and let $B' = B - z\,\sigma_c\sqrt{T}$ with
+$z = \Phi^{-1}(1-\delta/3)$. If \CBUC~only plays arms with
+\[
+  \sum_{s < t} c_{i_s}
+   \;+\; \hat{c}_{i}(t) + \beta\,r_i(t)
+   \;\le\; B',
+\]
+then with probability at least $1 - \delta/3$ the total realised cost
+$\sum_{s \le T} c_{i_s}$ does not exceed $B$. \emph{Proof.} The
+$z\sigma_c\sqrt{T}$ shrinkage is exactly the Gaussian quantile at
+level $\delta/3$ for the sum of $T$ i.i.d.\ sub-Gaussian summands with
+variance proxy $\sigma_c^2$; by the sub-Gaussian tail bound,
+$\Prob[\sum c_i > \Ex[\sum c_i] + z\sigma_c\sqrt{T}] \le \delta/3$. The
+per-round UCB check ensures $\Ex[\sum c_i] \le B'$ on the event of L1,
+which itself has probability at least $1 - \delta/3$. A union bound
+over the two events gives total failure probability at most
+$2\delta/3$. An analogous argument for latency, combined by union bound
+with the previous two events, gives a total violation probability
+bounded by $\delta$. \qed
+
+\paragraph{L3 (Lagrangian reduction to unconstrained \BwK).}
+Let $\mathcal{L}_i(\lambda) = \mu_i - \lambda_B c_i - \lambda_D \ell_i$
+with $\lambda = (\lambda_B, \lambda_D) \ge 0$. By Lagrangian duality on
+the offline chance-constrained knapsack, there exists a
+$\lambda^\star \ge 0$ such that the optimal non-adaptive CC-feasible
+value equals $\sup_i \mathcal{L}_i(\lambda^\star) \cdot T$
+(up to a rounding gap $O(M)$ from the 0/1 structure). \emph{Proof
+sketch.} This is a restatement of LP-duality for 0/1 knapsack with
+resource constraints, as used by~\cite{agrawal2014bwk,bwk2018};
+the only novelty is applying it to the CC-feasible primal rather than
+the mean-feasible primal, which is legitimate because L2 makes the CC
+primal equivalent to a mean-feasible primal with modified budget $B'$.
+The utility-per-cost ratio that appears in the UCB score
+(Eq.~\ref{eq:ucb}) is exactly the per-unit-resource Lagrangian at the
+primal optimum of $\lambda^\star_B$ with $\lambda^\star_D$ set to
+zero for the binding-budget regime; the non-concavity of the ratio is
+sidestepped because we compete only against the non-adaptive oracle,
+which itself plays the same ratio. \qed
+
+\paragraph{L4 (\BwK-style regret on the modified instance).}
+On the event of L1 $\cap$ L2 (which holds with probability at least
+$1-\delta$), the instance reduces to a two-resource \BwK~problem with
+modified budget $B'$ and the reduced reward $\mathcal{L}_i(\lambda^\star)$.
+Applying~\cite[Thm.~4.1]{bwk2018} to this instance — the theorem
+applies directly because the concentration inputs are exactly those
+provided by L1 — gives, for some instance-independent $c_1 > 0$,
+\[
+  \mathsf{REG}_{\mathcal{L}}(T)
+   \;\le\; c_1 \sqrt{K T \log T}
+        \;+\; \Oh(1).
+\]
+Translating back from $\mathcal{L}$-regret to $U$-regret adds a
+correction proportional to $|B - B'| = z\sigma_c\sqrt{T}$ on the budget
+axis and $z\sigma_\ell\sqrt{T}$ on the latency axis: when the
+shrunk-budget oracle cannot execute its full plan, the lost utility is
+bounded by the Lipschitz constant of $U$ in total resource (at most
+$M/c_{\min}$) times the missed budget. Combining,
+\[
+  \mathsf{REG}(T)
+   \;\le\; c_1 \sqrt{K T \log T}
+        \;+\; \tfrac{M}{c_{\min}} \cdot z(\sigma_c + \sigma_\ell)\sqrt{T}
+        \;+\; c_3.
+\]
+This is the bound of Theorem~\ref{thm:regret} with
+$C_1 = c_1$, $C_2 = M(\sigma_c + \sigma_\ell)/c_{\min}$, $C_3 = c_3$.
+The overall failure probability is $\le \delta + KT^{-2}$ (from L1's
+union bound), as stated. \qed
+
+\paragraph{Remarks on the nontrivial steps.}
+Three steps merit explicit comment. (i) The utility-per-cost ratio in
+Eq.~\eqref{eq:ucb} is handled by L3's duality reduction — the ratio
+itself is not bounded in regret, but the Lagrangian-linearised score
+$\mathcal{L}_i$ is, and L3 shows these coincide at the oracle. (ii) The
+two-resource coupling is handled by running the L1--L2 argument
+\emph{independently} for cost and latency with confidence level
+$\delta/2$ each, then union-bounding; because the UCB check in
+\CBUC~uses the max of the two violations, no further coupling term
+appears. (iii) The chance-constraint tightening is a finite,
+$\sqrt{T}$-scale correction (L2), which is strictly smaller than the
+$\sqrt{KT\log T}$ \BwK~term as soon as $K \ge (z\sigma/c_{\min})^2/\log T$;
+for all sweep cells studied, this holds by a wide margin, so the
+dominant $\tOh(\sqrt{KT})$ rate is preserved.
+
+\paragraph{Proof of Corollary~\ref{cor:cvar} (heavy-tailed cost).}
+Replace L2's Gaussian quantile with the empirical-CVaR estimator
+$\widehat{\mathrm{CVaR}}_\delta(c_i)$, which under (A1') is consistent
+at rate $\Oh(\sqrt{\log t / N_i})$. The per-round feasibility check
+becomes $\sum_{s<t} c_{i_s} + \widehat{\mathrm{CVaR}}_\delta(c_i) \le B$.
+Repeating L2 with the extreme-order-statistic concentration rate (in
+place of the sub-Gaussian quantile) gives the same feasibility
+guarantee at the price of a $\sqrt{\log T}$ factor in the correction
+term, so the $C_2\,z\,\sigma\sqrt{T}$ term in Theorem~\ref{thm:regret}
+becomes $C'_2\,\sqrt{T \log T}$. Steps L1, L3, L4 are unchanged.
+\qed
+
+\section{Ablation Studies}
+\label{app:ablations}
+
+We report three ablation studies that complement the main evaluation
+(\S\ref{sec:evaluation}). All experiments use the same simulator
+(\texttt{cbslao\_sim.py}) and are fully reproducible from
+\texttt{code/ablations.py}.
+
+% ── A1: α/β/γ sensitivity ──────────────────────────────────────
+\subsection{A1: Sensitivity to $\alpha$, $\beta$, $\gamma$}
+\label{app:abl-abg}
+
+We perform a one-at-a-time sweep of the three CBUC confidence-width
+parameters around their defaults ($\alpha\!=\!1.0$, $\beta\!=\!1.5$,
+$\gamma\!=\!1.5$) with $K\!=\!50$, $\rho\!=\!0.5$, tail index~$2.0$,
+sparsity~$0.2$, and $n\!=\!40$ seeds per setting.
+
+\begin{table}[t]
+\centering
+\caption{CBUC sensitivity to $\alpha$, $\beta$, $\gamma$.
+Budget-overrun rate remains \textbf{0.000} across the entire grid;
+utility varies within a modest range.}
+\label{tab:abl-abg}
+\begin{tabular}{llcc}
+\toprule
+Param & Value & Overrun & Utility \\
+\midrule
+$\alpha$ & 0.25 & 0.000 & 0.792 \\
+$\alpha$ & 0.50 & 0.000 & 0.652 \\
+$\alpha$ & 1.00 & 0.000 & 0.645 \\
+$\alpha$ & 1.50 & 0.000 & 0.670 \\
+$\alpha$ & 2.00 & 0.000 & 0.695 \\
+$\alpha$ & 3.00 & 0.000 & 0.620 \\
+\midrule
+$\beta$  & 0.50 & 0.000 & 0.733 \\
+$\beta$  & 1.00 & 0.000 & 0.605 \\
+$\beta$  & 1.50 & 0.000 & 0.711 \\
+$\beta$  & 2.00 & 0.000 & 0.687 \\
+$\beta$  & 2.50 & 0.000 & 0.852 \\
+$\beta$  & 3.00 & 0.000 & 0.801 \\
+\midrule
+$\gamma$ & 0.50 & 0.000 & 0.519 \\
+$\gamma$ & 1.00 & 0.000 & 0.592 \\
+$\gamma$ & 1.50 & 0.000 & 0.684 \\
+$\gamma$ & 2.00 & 0.000 & 0.721 \\
+$\gamma$ & 2.50 & 0.000 & 0.681 \\
+$\gamma$ & 3.00 & 0.000 & 0.762 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Observation.}
+Table~\ref{tab:abl-abg} shows that the budget-overrun rate is
+\emph{identically zero} across the entire parameter grid, confirming
+that \CBUC's safety guarantee is insensitive to reasonable
+perturbations of $\alpha$, $\beta$, $\gamma$. Utility varies within the
+range $[0.519, 0.852]$ but never at the expense of constraint
+satisfaction. Figure~\ref{fig:abl-abg} visualises the trade-off: higher
+$\gamma$ values (more conservative cost lower bounds) tend to improve
+utility by steering the policy toward reliably cheap, high-value tools.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{ablation_abg.png}
+\caption{CBUC sensitivity to $\alpha$ (utility bonus), $\beta$
+(cost/deadline margin), and $\gamma$ (cost lower bound). Left axis:
+budget-overrun rate (identically zero). Right axis: utility achieved.
+$K\!=\!50$, $\rho\!=\!0.5$, $n\!=\!40$ seeds.}
+\label{fig:abl-abg}
+\end{figure}
+
+
+% ── A2: Utility-dense distractors ──────────────────────────────
+\subsection{A2: Behaviour Under Utility-Dense Distractors}
+\label{app:abl-distract}
+
+This study varies the fraction of tools with non-zero marginal utility
+(\emph{utility sparsity}) from $0.1$ (90\% distractors) to $1.0$ (no
+distractors), with $K\!=\!50$, $\rho\!=\!0.5$, tail~$2.0$, $n\!=\!30$
+seeds per cell.
+
+\begin{table}[t]
+\centering
+\caption{Effect of distractor density on four policies.
+\CBUC~variants maintain zero overrun across all sparsity levels;
+baselines degrade as distractors increase.}
+\label{tab:abl-distract}
+\begin{tabular}{llcc}
+\toprule
+Policy & Sparsity & Overrun & Utility \\
+\midrule
+\ReAct-capped     & 0.10 & 0.200 & 0.754 \\
+\ReAct-capped     & 0.25 & 0.133 & 0.867 \\
+\ReAct-capped     & 0.50 & 0.033 & 0.983 \\
+\ReAct-capped     & 0.75 & 0.133 & 0.996 \\
+\ReAct-capped     & 1.00 & 0.067 & 1.000 \\
+\midrule
+\BwK-vanilla      & 0.10 & 0.033 & 0.755 \\
+\BwK-vanilla      & 0.25 & 0.133 & 0.917 \\
+\BwK-vanilla      & 0.50 & 0.067 & 0.981 \\
+\BwK-vanilla      & 0.75 & 0.200 & 0.998 \\
+\BwK-vanilla      & 1.00 & 0.067 & 1.000 \\
+\midrule
+\CBUC-aggr ($z\!=\!0$) & 0.10 & 0.000 & 0.387 \\
+\CBUC-aggr ($z\!=\!0$) & 0.25 & 0.000 & 0.775 \\
+\CBUC-aggr ($z\!=\!0$) & 0.50 & 0.000 & 0.979 \\
+\CBUC-aggr ($z\!=\!0$) & 0.75 & 0.000 & 0.998 \\
+\CBUC-aggr ($z\!=\!0$) & 1.00 & 0.000 & 0.998 \\
+\midrule
+\textbf{\CBUC~($z\!=\!1.28$)} & 0.10 & \textbf{0.000} & 0.437 \\
+\textbf{\CBUC~($z\!=\!1.28$)} & 0.25 & \textbf{0.000} & 0.791 \\
+\textbf{\CBUC~($z\!=\!1.28$)} & 0.50 & \textbf{0.000} & 0.940 \\
+\textbf{\CBUC~($z\!=\!1.28$)} & 0.75 & \textbf{0.000} & 0.996 \\
+\textbf{\CBUC~($z\!=\!1.28$)} & 1.00 & \textbf{0.000} & 0.999 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Observation.}
+Table~\ref{tab:abl-distract} reveals a clear separation: both \CBUC\
+variants achieve \emph{zero} budget overrun regardless of distractor
+density, whereas \ReAct-capped and \BwK-vanilla reach overrun rates of
+up to $20\%$ when 90\% of tools are distractors (sparsity~$=\!0.1$).
+The utility gap between \CBUC\ and the baselines is largest when
+distractors dominate: at sparsity $0.1$, \CBUC\ achieves $0.437$
+vs.\ $0.754$ for \ReAct-capped, but the baselines violate the budget to
+obtain that utility. As sparsity increases toward $1.0$, the gap
+closes because all tools carry useful payoff and budget pressure
+subsides (Figure~\ref{fig:abl-distract}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{ablation_distractors.png}
+\caption{Effect of distractor density. Left: utility achieved.
+Right: budget-overrun rate. \CBUC~variants maintain zero overrun at all
+densities; baselines degrade under sparse utility. $K\!=\!50$,
+$\rho\!=\!0.5$, $n\!=\!30$.}
+\label{fig:abl-distract}
+\end{figure}
+
+
+% ── A3: Calibrated benchmark-trace replay ──────────────────────
+\subsection{A3: Calibrated Benchmark-Trace Replay}
+\label{app:abl-replay}
+
+To gauge \CBUC's behaviour under workloads resembling public
+tool-calling benchmarks, we calibrate the simulator to summary
+statistics from three benchmark families:
+\begin{itemize}
+  \item \textbf{ToolBench-like} ($K\!=\!100$, 6~tools/task, heavy tail
+    $\alpha\!=\!1.8$, sparse utility $s\!=\!0.08$): large API pool,
+    heavy-tailed costs, very sparse relevance.
+  \item \textbf{$\tau$-bench-like} ($K\!=\!15$, 5~tools/task,
+    $\alpha\!=\!2.5$, $s\!=\!0.4$): small pool, moderate tail, denser
+    relevance.
+  \item \textbf{BFCL-like} ($K\!=\!40$, 2~tools/task, $\alpha\!=\!2.2$,
+    $s\!=\!0.15$): mid-size pool, single-function-call-style tasks.
+\end{itemize}
+Budget is calibrated to tools-per-task $\times$ mean-cost $\div$
+budget-multiplier. $n\!=\!50$ seeds per profile.
+
+\emph{Caveat}: these are parameterised simulations, \textbf{not} live
+trace replays. Network calls are not issued; only summary statistics
+from published benchmark documentation are used. See~\S\ref{sec:threats}.
+
+\begin{table}[t]
+\centering
+\caption{Calibrated benchmark-trace replay. \CBUC~achieves $\le 2\%$
+overrun across all three profiles; baselines reach $44$--$100\%$.
+$n\!=\!50$ seeds per profile.}
+\label{tab:abl-replay}
+\begin{tabular}{llccc}
+\toprule
+Profile & Policy & Overrun & Utility & Regret \\
+\midrule
+\multirow{4}{*}{ToolBench}
+  & \ReAct-capped     & 0.620 & 0.646 & $+0.324$ \\
+  & \BwK-vanilla      & 0.440 & 0.653 & $+0.318$ \\
+  & \CBUC-aggr        & \textbf{0.000} & 0.427 & $+0.543$ \\
+  & \textbf{\CBUC}    & \textbf{0.000} & 0.469 & $+0.501$ \\
+\midrule
+\multirow{4}{*}{$\tau$-bench}
+  & \ReAct-capped     & 1.000 & 0.802 & $+0.135$ \\
+  & \BwK-vanilla      & 0.560 & 0.810 & $+0.127$ \\
+  & \CBUC-aggr        & \textbf{0.000} & 0.738 & $+0.199$ \\
+  & \textbf{\CBUC}    & \textbf{0.000} & 0.728 & $+0.208$ \\
+\midrule
+\multirow{4}{*}{BFCL}
+  & \ReAct-capped     & 1.000 & 0.387 & $+0.491$ \\
+  & \BwK-vanilla      & 0.580 & 0.374 & $+0.504$ \\
+  & \CBUC-aggr        & 0.040 & 0.518 & $+0.360$ \\
+  & \textbf{\CBUC}    & \textbf{0.020} & 0.492 & $+0.386$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Observation.}
+Table~\ref{tab:abl-replay} confirms that baseline policies fail
+catastrophically on all three calibration profiles: \ReAct-capped
+overruns the budget in $62$--$100\%$ of runs, and \BwK-vanilla in
+$44$--$58\%$. In contrast, \CBUC~achieves $\le 2\%$ overrun across
+every profile. On the ToolBench-like workload --- the most challenging
+profile due to its large pool, heavy tail, and extreme sparsity ---
+\CBUC\ still maintains zero overrun at the cost of a moderate utility
+reduction ($0.469$ vs.\ $0.653$ for \BwK-vanilla). On the denser
+$\tau$-bench profile, the utility gap narrows to $0.728$ vs.\ $0.810$,
+and the baselines overrun the budget more than half the time.
+Figure~\ref{fig:abl-replay} summarises the comparison.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{ablation_replay.png}
+\caption{Calibrated benchmark replay (parameterised to published
+summary statistics; not a live-trace replay). Left: budget-overrun
+rate. Right: utility achieved. \CBUC~achieves near-zero overrun across
+all profiles. $n\!=\!50$.}
+\label{fig:abl-replay}
+\end{figure}

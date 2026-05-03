@@ -1,0 +1,48 @@
+\section{Related Work}
+\label{sec:related}
+
+We survey four bodies of work most directly related to \CBSLAO.
+
+\paragraph{LLM agents and tool use.}
+\ReAct~\cite{yao2023react}, Toolformer~\cite{schick2023toolformer},
+Chameleon~\cite{lu2023chameleon}, and production agent frameworks
+(OpenAI Agents SDK, LangChain \texttt{AgentExecutor}, AutoGen) establish
+the controller archetype. These systems optimise task success; none
+offers formal cost or latency guarantees.
+
+\paragraph{Tool-use benchmarks.}
+ToolBench~\cite{qin2023toolllm}, $\tau$-bench~\cite{yao2024taubench},
+and the Berkeley Function-Calling
+Leaderboard~(BFCL)~\cite{bfcl2024} provide task traces but do not
+expose cost/latency ground truth in a form directly reusable for
+chance-constrained optimisation.
+
+\paragraph{Service-oriented composition under QoS.}
+Classical QoS-aware service composition~\cite{zeng2004qos,alrifai2009qos}
+formulated composition as constrained optimisation; \CBSLAO~inherits
+this tradition but must additionally contend with the
+\emph{non-stationary} and \emph{stochastic} cost of LLM-mediated
+calls.
+
+\paragraph{Stochastic knapsack with deadlines.}
+Dean, Goemans \& Vondr\'{a}k~\cite{dean2008stochastic} and followups
+give adaptive/non-adaptive gap results for stochastic knapsack. We
+adopt their framing for the adaptivity-gap remark in
+\S\ref{sec:formulation}.
+
+\paragraph{Budget-aware bandits.}
+Badanidiyuru, Kleinberg \& Slivkins~\cite{bwk2018} on
+\emph{bandits with knapsacks} (\BwK) gives the closest existing online
+framework; \CBUC~specialises \BwK~to the LLM-agent setting with
+schema-type pruning and explicit chance constraints.
+
+\paragraph{Constraint-aware decision baselines.}
+Several strong families of constrained-decision algorithms are
+deployable competitors: \emph{primal-dual Lagrangian} methods for
+constrained bandits and constrained MDPs~\cite{mahdavi2012tradeoff,agrawal2014bwk}, \emph{tail-aware} formulations that replace the
+sub-Gaussian concentration with CVaR~\cite{tamkin2020cvar}, and
+offline \emph{chance-constrained knapsack}
+solvers~\cite{kleinberg2000stochasticpacking} that inflate costs by a
+safety margin and solve 0/1 knapsack once. We include a representative
+of each in our evaluation (\S\ref{sec:evaluation}).
+
