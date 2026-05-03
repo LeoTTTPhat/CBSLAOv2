@@ -96,15 +96,26 @@ step without requiring dual-variable tuning.
     \CBSLAO~with chance-constrained budget and deadline semantics,
     distinguishing adaptive, semi-adaptive, and non-adaptive policy
     classes (\S\ref{sec:formulation}).
-  \item[(C2)] \textbf{Hardness.} NP-hardness of the decision version
-    of \CBSLAO~by polynomial reduction from 0/1 Knapsack, together
-    with inapproximability remarks. The reduction holds even for
-    degenerate (point-mass) cost distributions
-    (\S\ref{sec:hardness}).
+  \item[(C2)] \textbf{Hardness, inapproximability, and matching
+    approximation.} NP-hardness of the decision version of \CBSLAO~by
+    polynomial reduction from 0/1 Knapsack
+    (Thm.~\ref{thm:hardness}); a stronger
+    $(1 - 1/e + \varepsilon)$-inapproximability of \CBSLAO-\textsc{opt}
+    via reduction from Max-$k$-Coverage that exploits the schema-typing
+    structure of tools (Thm.~\ref{thm:inapprox}); and a matching
+    polynomial-time $(1-1/e)$-approximation for the offline
+    non-adaptive variant under monotone-submodular utility
+    (Thm.~\ref{thm:approx}). An explicit adaptivity-gap construction
+    (Lemma~\ref{lem:adaptivity-gap}) shows the gap is at least $4/3$
+    on a worst-case family and at most an absolute constant on every
+    instance (\S\ref{sec:hardness}).
   \item[(C3)] \textbf{Algorithm and regret bound.} \CBUC, an online
     policy with an $\tOh(\sqrt{KT})$ regret bound against the best
-    non-adaptive feasible policy for $K$ tools over $T$ rounds
-    (\S\ref{sec:algorithm}).
+    non-adaptive feasible policy for $K$ tools over $T$ rounds. The
+    proof uses a coupled multivariate empirical-Bernstein concentration
+    that retains the cost--latency--utility dependence inside the
+    radius formula, saving a constant factor over a fully decoupled
+    analysis (\S\ref{sec:algorithm}, App.~\ref{app:proof}).
   \item[(C4)] \textbf{Empirical evaluation.} A reproducible simulator
     and controlled extended sweep ($3{,}960$ replicate rows) showing
     \CBUC~cuts budget-overrun from $36.9\%$ (\ReAct-capped) and

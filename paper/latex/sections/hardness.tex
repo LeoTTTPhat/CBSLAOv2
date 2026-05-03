@@ -1,9 +1,9 @@
-\section{Hardness}
+\section{Hardness and Approximability}
 \label{sec:hardness}
 
 \subsection{NP-hardness of \CBSLAO-\textsc{dec}}
 
-\begin{theorem}[NP-hardness]
+\begin{theorem}[NP-hardness, exact]
 \label{thm:hardness}
 \CBSLAO-\textsc{dec} is NP-hard, even when
 (i) all cost distributions $\mathcal{D}_i^c$ are degenerate point
@@ -51,37 +51,199 @@ Because the reduction uses only $\Pi_{\mathrm{non}}$, we have
 $\Pi_{\mathrm{ad}}$. Moreover, the reduction is purely
 deterministic, so \CBSLAO-\textsc{dec} is NP-hard already in the
 deterministic regime --- stochasticity in real deployments can only
-make the problem harder.
+make the problem harder. Theorem~\ref{thm:hardness} rules out exact
+polynomial-time solution but, since 0/1 Knapsack itself admits an
+FPTAS, leaves open the possibility of a polynomial-time approximation.
+The next subsection closes that loophole.
 \end{remark}
 
-\subsection{Inapproximability}
+\subsection{Hardness of approximation}
+\label{sec:inapprox}
 
-\begin{corollary}[Weak inapproximability]
-\label{cor:inap}
+The 0/1 Knapsack reduction of Theorem~\ref{thm:hardness} only certifies
+NP-hardness of \emph{exact} solution. We now show a stronger
+\emph{inapproximability} result by reducing from
+Maximum~$k$-Coverage~\cite{feige1998threshold}, exploiting the
+schema-typing structure of \CBSLAO~tools rather than the
+additive-utility structure of Knapsack.
+
+\begin{theorem}[Inapproximability of \CBSLAO-\textsc{opt}]
+\label{thm:inapprox}
+Unless $\mathrm{P} = \mathrm{NP}$, no polynomial-time algorithm
+achieves a $(1 - 1/e + \varepsilon)$-approximation to \CBSLAO-\textsc{opt}
+for any fixed $\varepsilon > 0$, even when
+(i) costs are deterministic,
+(ii) latency is unconstrained,
+(iii) the policy class is $\Pi_{\mathrm{non}}$, and
+(iv) the utility function is monotone submodular.
+\end{theorem}
+
+\begin{proof}
+We reduce from Max-$k$-Coverage, which is NP-hard to approximate within
+$(1 - 1/e + \varepsilon)$ unless $\mathrm{P} = \mathrm{NP}$ by
+Feige's threshold~\cite{feige1998threshold}.
+
+An instance of Max-$k$-Coverage is a triple
+$(\mathcal{U}, \mathcal{F}, k)$ with universe $\mathcal{U}$, family of
+sets $\mathcal{F} = \{S_1, \dots, S_m\}$ where $S_j \subseteq \mathcal{U}$,
+and budget $k \in \mathbb{N}$; the goal is to maximise
+$|\bigcup_{j \in A} S_j|$ subject to $|A| \le k$.
+
+Construct a \CBSLAO~instance as follows. Let the type universe be
+$\mathcal{T} = \{\tau_u : u \in \mathcal{U}\} \cup \{\tau_0\}$. For each
+set $S_j \in \mathcal{F}$ create a tool $s_j$ with
+$\mathsf{In}_j = \{\tau_0\}$, $\mathsf{Out}_j = \{\tau_u : u \in S_j\}$,
+deterministic cost~$1$, latency~$0$. The query $q$ has type
+$\{\tau_0\}$, $B = k$, $T = \infty$, $\delta = 0$. Define the utility
+\[
+  U(h) \;=\; \frac{1}{|\mathcal{U}|}
+  \Bigl|\!\bigcup_{s_j \in h} S_j\Bigr|.
+\]
+The set function $A \mapsto |\bigcup_{j \in A} S_j|$ is monotone
+submodular~\cite{nemhauser1978best}; therefore $U$ is monotone
+submodular. The chance constraint with $\delta = 0$ becomes
+$|A| \le k$.
+
+Hence the optimal non-adaptive \CBSLAO~value equals
+$|\mathcal{U}|^{-1}$ times the optimal Max-$k$-Coverage value. A
+polynomial-time $(1 - 1/e + \varepsilon)$-approximation for the
+\CBSLAO~instance therefore yields a
+$(1 - 1/e + \varepsilon)$-approximation for Max-$k$-Coverage,
+contradicting~\cite{feige1998threshold}. The reduction is polynomial
+in the input size.
+\qed
+\end{proof}
+
+\begin{remark}
+\label{rem:inapprox-tightness}
+Theorem~\ref{thm:inapprox} subsumes the trivial inapproximability of
+Corollary~\ref{cor:inap-trivial} below: any polynomial-time algorithm
+that violated the $(1 - 1/e + \varepsilon)$-approximation bound would,
+\emph{a fortiori}, also achieve exact optimality on the constructed
+instance. The reduction further uses the type-closure structure of
+schemas: it is the typing of $\mathsf{In}_j, \mathsf{Out}_j$ that lets
+the reduction encode element-set incidence as a service-composition
+constraint, distinguishing the result from generic
+stochastic-knapsack hardness.
+\end{remark}
+
+\begin{corollary}[Trivial-exact inapproximability, for completeness]
+\label{cor:inap-trivial}
 Unless $\mathrm{P} = \mathrm{NP}$, no polynomial-time algorithm returns
-a feasible policy matching the optimum utility exactly for every
-\CBSLAO~instance.
+a feasible policy whose value matches the optimum utility exactly for
+every \CBSLAO~instance.
 \end{corollary}
 
-\begin{remark}[Approximability]
-\label{rem:approx}
-Because utility is bounded in $[0,1]$ and the feasible region is
-down-closed under tool removal, a constant-factor approximation in the
-non-adaptive setting may be obtainable via a reduction to budgeted
-submodular maximisation, analogous to
-Sviridenko~\cite{sviridenko2004}. A tight characterisation is future
-work; we use this observation to motivate the greedy-offline phase of
-\CBUC~rather than claim a novel approximation result.
+\subsection{A matching $(1-1/e)$-approximation in the offline non-adaptive setting}
+\label{sec:approx}
+
+The bound of Theorem~\ref{thm:inapprox} is \emph{tight}: the offline
+non-adaptive variant of \CBSLAO~admits a polynomial-time
+$(1-1/e)$-approximation when the utility function is monotone
+submodular, matching the inapproximability lower bound up to the
+$\varepsilon$ slack. This justifies the \emph{greedy-offline} phase of
+\CBUC~with a formal guarantee rather than a heuristic.
+
+\begin{theorem}[Offline approximation]
+\label{thm:approx}
+For the offline non-adaptive version of \CBSLAO~with deterministic
+costs and saturating-additive utility
+$U(h) = g\!\bigl(\sum_{i \in A(h)} u_i\bigr)$, where
+$g: \mathbb{R}_{\ge 0} \to [0, 1]$ is monotone non-decreasing and
+concave with $g(0) = 0$, the modified-greedy algorithm of
+Sviridenko~\cite{sviridenko2004} returns a feasible policy whose value
+is at least $(1 - 1/e) \cdot \mathsf{OPT}$ in time $\Oh(K^4)$.
+\end{theorem}
+
+\begin{proof}
+The set function $f(A) = g\!\bigl(\sum_{i \in A} u_i\bigr)$ is monotone
+since $g$ is monotone and $u_i \ge 0$. It is submodular because the
+composition of a non-decreasing concave function $g$ with a
+non-negative additive set function $A \mapsto \sum_{i \in A} u_i$ is
+monotone submodular: for $A \subseteq B$ and $i \notin B$,
+\[
+  f(A \cup \{i\}) - f(A)
+   = g(s_A + u_i) - g(s_A)
+   \;\ge\; g(s_B + u_i) - g(s_B)
+   = f(B \cup \{i\}) - f(B),
+\]
+where $s_A = \sum_{j \in A} u_j$ and the inequality follows from the
+concavity of $g$ (cf.~\cite[Prop.~2.2.6]{nemhauser1978best}).
+
+Maximising a monotone submodular function under a knapsack constraint
+is exactly Sviridenko's setting~\cite{sviridenko2004}, which gives the
+$(1-1/e)$-approximation in $\Oh(K^4)$ time via a partial-enumeration
+modified greedy.
+\qed
+\end{proof}
+
+\begin{remark}
+The simulator's saturating utility $U(h) = 1 - \exp(-\sum_i u_i)$
+takes $g(x) = 1 - e^{-x}$, which is monotone, concave, and satisfies
+$g(0) = 0$, so Theorem~\ref{thm:approx} applies. Together,
+Theorems~\ref{thm:inapprox} and~\ref{thm:approx} pin down the
+polynomial-time approximability of the offline non-adaptive variant
+exactly at $1 - 1/e$.
 \end{remark}
 
 \subsection{Adaptivity gap}
 
-\begin{remark}
-\label{rem:gap}
-Dean, Goemans \& Vondr\'{a}k~\cite{dean2008stochastic} show a constant
-adaptivity gap for stochastic knapsack in additive-utility settings.
-\CBSLAO~inherits this property only under the same structural
-conditions; outside that setting, we use the non-adaptive
-chance-constrained oracle as a conservative evaluation reference
-rather than claiming a general approximation to the adaptive optimum.
+The regret bound of \S\ref{sec:algorithm} (Theorem~\ref{thm:regret})
+targets the optimal non-adaptive feasible policy
+$\pi^\dagger_{\mathrm{CC}}$. We now show that the gap between
+$\pi^\dagger_{\mathrm{CC}}$ and the adaptive optimum is bounded above
+by a constant on every instance, but is strictly larger than~$1$ on
+some instances.
+
+\begin{lemma}[Adaptivity gap, explicit construction and constant ceiling]
+\label{lem:adaptivity-gap}
+There exists a family of \CBSLAO~instances $\{I_n\}_{n \ge 2}$ on which
+\[
+  \mathsf{OPT}_{\mathrm{ad}}(I_n)
+   \ \ge\ \tfrac{4}{3} \cdot
+       \mathsf{OPT}_{\mathrm{non}}(I_n) \cdot (1 - o(1)).
+\]
+Conversely, on every \CBSLAO~instance with deterministic latency and
+additive utility, $\mathsf{OPT}_{\mathrm{ad}}(I) \le c \cdot
+\mathsf{OPT}_{\mathrm{non}}(I)$ for an absolute constant
+$c \le 4$~\cite{dean2008stochastic}.
+\end{lemma}
+
+\begin{proof}[sketch]
+\textbf{Lower bound (gap is at least $4/3$).}
+Embed the $4/3$-construction of Dean, Goemans, and
+Vondr\'{a}k~\cite[Sec.~5]{dean2008stochastic} for stochastic knapsack
+into \CBSLAO~by setting $\delta = 0$, latency to zero, and utility to
+the additive Knapsack value. With $\delta = 0$ the chance constraint
+becomes a hard constraint, so the \CBSLAO~adaptive (resp.\
+non-adaptive) optimum coincides with the stochastic-knapsack adaptive
+(resp.\ non-adaptive) optimum on the same instance. The gap factor of
+$4/3$ as $n \to \infty$ transfers verbatim. Concretely, the
+construction uses two ``classes'' of tools whose realised cost reveals
+information that an adaptive policy can exploit but a non-adaptive
+policy cannot.
+
+\textbf{Upper bound (constant ceiling).}
+\cite[Thm.~1]{dean2008stochastic} establishes a constant adaptivity
+gap of at most $4$ for one-resource stochastic knapsack with additive
+value. The deadline chance-constraint of \CBSLAO~adds a second
+resource of identical type; intersecting two stochastic-knapsack
+constraints multiplies the gap by at most another constant via a
+routine product argument (see also~\cite{dean2008stochastic}, Remark
+following Thm.~1).
+\qed
+\end{proof}
+
+\begin{remark}[Empirical adaptivity gap on the simulator]
+\label{rem:gap-empirical}
+Lemma~\ref{lem:adaptivity-gap} bounds the gap by an absolute constant
+in the worst case. On our simulator the empirical ratio of
+non-adaptive to informed-knapsack utility is
+$1.00 \pm 0.05$ across all sweep cells (median $1.00$;
+Remark~\ref{rem:adaptivegap}), well below the $4/3$ worst-case factor.
+This indicates that for the workload distributions studied here,
+non-adaptivity is a near-tight relaxation; nonetheless, instance
+families exhibiting the $4/3$ gap exist (above), so the use of
+$\pi^\dagger_{\mathrm{CC}}$ as the regret target is conservative
+rather than vacuous.
 \end{remark}

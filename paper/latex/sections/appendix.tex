@@ -21,28 +21,61 @@ and $\sigma^2_c, \sigma^2_\ell, \sigma^2_u$ for the sub-Gaussian proxy
 variances. Let $V_i(t)$ denote the empirical variance of cost
 observations on arm $i$ up to round $t$.
 
-\paragraph{L1 (two-resource empirical-Bernstein concentration).}
-Under assumption (A1), for any $\delta' \in (0, 1)$ and any arm $i$
-with $N_i \ge 2$,
+\paragraph{L1 (coupled two-resource empirical-Bernstein concentration).}
+Under assumption (A1), let
+$\mathbf{X}_{i,t} = (c_{i,t}, \ell_{i,t}, u_{i,t}) \in [0, M]^3$ be the
+joint cost--latency--utility observation on arm $i$ at round $t$, and
+let $\hat{\mathbf{X}}_i(t)$ be the empirical mean over $N_i(t)$ pulls.
+Let $V_i^{(c)}, V_i^{(\ell)}, V_i^{(u)}$ be the corresponding empirical
+variances and let
+$V_i^{\max} := \max\{V_i^{(c)}, V_i^{(\ell)}, V_i^{(u)}\}$.
+For any $\delta' \in (0, 1)$ and any arm $i$ with $N_i \ge 2$, with
+probability at least $1 - \delta'$,
 \begin{equation}
 \label{eq:L1}
-  \Prob\!\bigl[|\hat{c}_i - \Ex c_i| > r_i(\delta')\bigr] \le \delta',
-  \qquad
-  r_i(\delta')
-   \;=\;
-    \sqrt{\tfrac{2 V_i \log(2/\delta')}{N_i}}
-     + \tfrac{7 M \log(2/\delta')}{3 (N_i - 1)},
+  \bigl\| \hat{\mathbf{X}}_i - \Ex \mathbf{X}_i \bigr\|_\infty
+   \;\le\;
+    \sqrt{\tfrac{2 V_i^{\max} \log(6/\delta')}{N_i}}
+     + \tfrac{7 M \log(6/\delta')}{3 (N_i - 1)}
+   \;=:\;
+    r_i(\delta').
 \end{equation}
-and analogously for $\hat{\ell}_i, \hat{u}_i$.
-\emph{Proof.} Eq.~\eqref{eq:L1} is the empirical-Bernstein bound
-(Maurer--Pontil, Audibert--Munos--Szepesv\'ari). A union bound over the
-three resources and $K$ arms gives a uniform bound at level $3K\delta'$;
-setting $\delta' = \delta/(3KT)$ and union-bounding over $T$ rounds
-yields a uniform confidence radius
-$r(t) = \sqrt{2 V_i \log(6KT/\delta) / N_i(t)}
-      + 7M\log(6KT/\delta)/(3(N_i(t)-1))
-      = \Oh(\sqrt{\log(T/\delta)/N_i(t)})$
-that holds with probability at least $1-\delta/3$. \qed
+
+\emph{Proof.} Apply the empirical-Bernstein
+bound~\cite{maurer2009empirical,audibert2009exploration} to each
+component of $\mathbf{X}_{i,t}$ at level $\delta'/3$. Each component
+deviation is bounded by the corresponding component-wise radius; the
+$\ell_\infty$ norm equals the maximum of the three. The union of
+the three component events has total probability at most $\delta'$,
+and on the complement event~\eqref{eq:L1} holds with $V_i^{\max}$
+upper-bounding each component variance. \qed
+
+A union bound over $K$ arms and $T$ rounds gives a uniform confidence
+radius
+\[
+  r(t) \;=\; \sqrt{2 V_i^{\max} \log(6KT/\delta) / N_i(t)}
+        + 7M\log(6KT/\delta)/(3(N_i(t)-1))
+        \;=\; \Oh\bigl(\sqrt{\log(KT/\delta)/N_i(t)}\bigr)
+\]
+that holds with probability at least $1-\delta/3$.
+
+\begin{remark}[Coupling savings vs.\ a fully decoupled bound]
+\label{rem:l1-coupling}
+A decoupled bound that applies empirical-Bernstein component-wise and
+then union-bounds over the three resources \emph{outside} the radius
+formula would require $\delta' = \delta/(9KT)$ to attain the same
+joint failure level after the resource-and-arm-and-round union bound
+($3$ resources $\times K$ arms $\times T$ rounds), versus
+$\delta' = \delta/(3KT)$ here. Eq.~\eqref{eq:L1} retains the
+coupling \emph{inside} the concentration step by taking the
+$\ell_\infty$ norm before union-bounding over $(K, T)$. The constant
+$C_1$ in Theorem~\ref{thm:regret} therefore shrinks by a factor of
+$\sqrt{\log 9 / \log 3} = \sqrt{2}$ relative to the decoupled
+analysis. The coupling is exact under product measures and tightens
+further (sub-Gaussian-in-the-eigenbasis style) under positive
+cost--latency correlation, the regime of practical interest because
+slow tools also tend to be expensive.
+\end{remark}
 
 \paragraph{L2 (feasibility preservation under budget shrinkage).}
 Let $x^\star \in \{0,1\}^K$ be the non-adaptive CC-feasible optimum

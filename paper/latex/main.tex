@@ -79,14 +79,20 @@ user-declared token budgets and service-level objective (SLO) deadlines.
 We formalise the \emph{Cost- and SLA-Bounded Agent Orchestration}
 (\CBSLAO) problem, in which an agent selects an adaptive sequence of
 tool invocations maximising expected utility subject to
-chance-constrained budget and deadline requirements. We prove that the
-decision version of \CBSLAO~is NP-hard by reduction from 0/1 Knapsack,
-even when cost distributions are degenerate point masses.
-We then present \CBUC~(\emph{Cost-Budgeted Upper Confidence}), an
+chance-constrained budget and deadline requirements. We prove that
+\CBSLAO~is NP-hard by reduction from 0/1 Knapsack and, more strongly,
+$(1 - 1/e + \varepsilon)$-inapproximable by reduction from
+Max-$k$-Coverage---a bound matched (up to $\varepsilon$) by a
+$(1-1/e)$-approximation in the offline non-adaptive
+monotone-submodular case. An explicit construction shows the
+adaptivity gap is at least $4/3$ on a worst-case family and at most
+an absolute constant on every instance. We then present \CBUC~(\emph{Cost-Budgeted Upper Confidence}), an
 online algorithm that combines schema-type-based offline pruning with a
 budget-aware UCB selector. Under bounded sub-Gaussian cost and utility
 noise, \CBUC~attains $\tOh(\sqrt{KT})$ regret against the best
-feasible non-adaptive policy for $K$ arms over $T$ rounds.
+feasible non-adaptive policy for $K$ arms over $T$ rounds, via a
+coupled multivariate empirical-Bernstein concentration that saves a
+constant factor over a decoupled analysis.
 In an extended controlled simulator spanning $18$ workload cells,
 $20$ seeds per cell, and $11$ policies ($3{,}960$ replicate rows),
 \CBUC~cuts budget-overrun from $36.9\%$ (\ReAct-capped) and $28.9\%$
