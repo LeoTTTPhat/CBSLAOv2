@@ -26,13 +26,10 @@ Excellent fit. The schema-typing-aware reduction in Theorem 2 anchors the theore
 5. **Theoretically tight characterization of the offline non-adaptive case.**
 6. **Coupled concentration** over the off-the-shelf BwK analysis.
 
-## 4. Weaknesses & Areas for Improvement (Final Status)
+## 4. Weaknesses & Areas for Improvement
 
-1. **Lack of real-world evaluation.** *Remaining limitation.* The evaluation is still entirely synthetic. While the calibrated benchmark replay parameterizes the simulator to realistic summary statistics, no live-trace replay is performed. Even a small live-API pilot would have been the final puzzle piece.
-2. **Strict Schema Typing Assumption.** *Resolved.* The authors added a thoughtful remark (Remark 3) clarifying that the lower bound relies on deterministic thresholded compatibility, and that purely probabilistic fuzzy registries would require a separate lower bound. This bounds the claim appropriately.
-3. **Utility Cost is Severe.** *Resolved.* The authors have correctly noted in §6.5 that the 0.587 empirical CBUC utility is consistent with the $(1-1/e) \approx 0.632$ offline approximability bound relative to the Lagrangian proxy. This elegantly explains the trade-off.
-4. **CBUC-L "informal" Proposition.** *Remaining minor issue.* Proposition 3 remains an informal statement next to tight formal theorems. A minor presentation point.
-5. **Citations.** *Resolved.* DOIs and correct sources added for key references (Feige 1998, Nemhauser 1978).
+1. **Lack of real-world evaluation.** The evaluation is still entirely synthetic. While the calibrated benchmark replay parameterizes the simulator to realistic summary statistics, no live-trace replay is performed. Even a small live-API pilot would have been the final puzzle piece.
+2. **CBUC-L "informal" Proposition.** Proposition 3 remains an informal statement next to tight formal theorems. A minor presentation point.
 
 ## 5. Detailed Comments
 
