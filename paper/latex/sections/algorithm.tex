@@ -98,6 +98,45 @@ $\eta$. The full procedure is given in Algorithm~\ref{alg:cbuc}.
 \end{algorithmic}
 \end{algorithm}
 
+\begin{figure}[t]
+\centering
+\resizebox{.92\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  >=Latex,
+  node distance=9mm and 11mm,
+  step/.style={draw=black!60, rounded corners=2pt, thick, align=center,
+               minimum width=34mm, minimum height=11mm, fill=black!3},
+  safe/.style={draw=blue!60!black, rounded corners=2pt, thick,
+               align=center, minimum width=35mm, minimum height=11mm,
+               fill=blue!7},
+  stop/.style={draw=red!60!black, rounded corners=2pt, thick,
+               align=center, minimum width=25mm, minimum height=10mm,
+               fill=red!7},
+  arrow/.style={->, thick, draw=black!70}
+]
+\node[safe] (shrink) {Shrink budgets\\$B',T'$ by tail margin};
+\node[step, right=of shrink] (stats) {Maintain estimates\\$\hat c_i,\hat\ell_i,\hat u_i,N_i$};
+\node[safe, right=of stats] (feasible) {Feasible set\\$\hat c_i+\mathrm{rad}_i\le B_t$\\$\hat\ell_i+\mathrm{rad}_i\le T_t$};
+\node[step, below=of feasible] (score) {Rank candidates\\utility-per-cost UCB};
+\node[step, left=of score] (invoke) {Invoke selected tool\\observe $(c,\ell,u)$};
+\node[step, left=of invoke] (update) {Update estimates\\and remaining budgets};
+\node[stop, below=of score] (halt) {$\mathsf{STOP}$};
+\draw[arrow] (shrink) -- (stats);
+\draw[arrow] (stats) -- (feasible);
+\draw[arrow] (feasible) -- node[right]{nonempty} (score);
+\draw[arrow] (score) -- (invoke);
+\draw[arrow] (invoke) -- (update);
+\draw[arrow] (update) |- (stats);
+\draw[arrow] (feasible) -- node[right]{empty} (halt);
+\draw[arrow] (score) -- node[right]{$\hat u_i<\eta$} (halt);
+\end{tikzpicture}}
+\caption{\CBUC's online control loop. Safety enters twice: once
+through the initial chance-constraint shrinkage and again through the
+per-round feasibility filter before any tool call is issued.}
+\label{fig:cbuc-loop}
+\end{figure}
+
 \subsection{Regret bound}
 
 Let $\pi^\dagger_{\mathrm{CC}} \in \Pi_{\mathrm{non}}$ denote the best

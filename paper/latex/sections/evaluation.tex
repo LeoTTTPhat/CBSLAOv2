@@ -140,6 +140,48 @@ of this joint safety is severe: \CBUC~loses $0.148$ utility vs.\
 primal-dual. This is a deployment trade-off, not a free dominance
 result.
 
+\begin{figure}[t]
+\centering
+\resizebox{.9\linewidth}{!}{%
+\begin{tikzpicture}[font=\small, >=Latex]
+  % Axes use x = utility in [0.55,1.00], y = budget-overrun in [0,1].
+  \draw[->, thick] (0,0) -- (10.3,0) node[right]{Utility};
+  \draw[->, thick] (0,0) -- (0,4.25) node[above]{Budget overrun};
+  \foreach \x/\lab in {0/0.55,3.33/0.70,6.67/0.85,10/1.00}
+    \draw (\x,0) -- (\x,-.08) node[below]{\lab};
+  \foreach \y/\lab in {0/0,1/0.25,2/0.50,3/0.75,4/1.00}
+    \draw (0,\y) -- (-.08,\y) node[left]{\lab};
+  \draw[blue!55!black, dashed, thick] (0,.08) -- (10,.08)
+    node[pos=.84, above]{2\% safety target};
+
+  \fill[red!70!black] (9.67,4.00) circle (2.2pt)
+    node[above left]{\ReAct-uncapped};
+  \fill[orange!80!black] (4.07,1.48) circle (2.2pt)
+    node[above right]{\ReAct-capped};
+  \fill[gray!70!black] (7.04,.83) circle (2.2pt)
+    node[right]{Greedy};
+  \fill[blue!70!black] (4.11,1.16) circle (2.2pt)
+    node[left]{\BwK};
+  \fill[purple!70!black] (5.69,.92) circle (2.2pt)
+    node[above]{Lagrangian};
+  \fill[violet!70!black] (4.20,.62) circle (2.2pt)
+    node[right]{CVaR-\BwK};
+  \fill[teal!70!black] (3.36,.11) circle (2.2pt)
+    node[above]{Pre-check};
+  \fill[black!70] (4.36,.01) circle (2.2pt)
+    node[below right]{CC oracle};
+  \fill[green!45!black] (1.11,.06) circle (2.4pt);
+  \fill[green!55!black] (.87,.06) circle (2.4pt);
+  \fill[green!65!black] (.82,.04) circle (2.8pt)
+    node[above right]{\CBUC~family};
+\end{tikzpicture}}
+\caption{Safety--utility frontier from Table~\ref{tab:headline}.
+Lower-right is preferred: \CBUC~occupies the high-assurance region,
+whereas Lagrangian control recovers utility while accepting much
+higher budget risk.}
+\label{fig:safety-utility-frontier}
+\end{figure}
+
 \begin{table}[t]
 \centering
 \caption{Safety and utility by Pareto tail. The heavy-tail

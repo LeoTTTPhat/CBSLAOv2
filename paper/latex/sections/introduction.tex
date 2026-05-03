@@ -89,6 +89,43 @@ bound and strong empirical safety. Unlike Lagrangian or CVaR
 relaxations, \CBUC~enforces constraints directly in the planning
 step without requiring dual-variable tuning.
 
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  >=Latex,
+  node distance=8mm and 10mm,
+  box/.style={draw=black!55, rounded corners=2pt, thick, align=center,
+              minimum width=27mm, minimum height=10mm, fill=black!3},
+  guard/.style={draw=blue!55!black, rounded corners=2pt, thick,
+                align=center, minimum width=31mm, minimum height=10mm,
+                fill=blue!7},
+  risk/.style={draw=red!60!black, rounded corners=2pt, thick,
+               align=center, minimum width=30mm, minimum height=10mm,
+               fill=red!7},
+  arrow/.style={->, thick, draw=black!70}
+]
+\node[box] (task) {Task\\$(q,B,T,\delta)$};
+\node[box, right=of task] (registry) {Tool registry\\schemas, costs, latency};
+\node[guard, right=of registry] (prune) {Type closure\\prune infeasible tools};
+\node[guard, right=of prune] (select) {\CBUC\\budget-aware UCB};
+\node[box, right=of select] (answer) {Tool calls\\and final answer};
+\node[risk, below=of select] (risk) {Guardrails\\chance constraints\\on cost and latency};
+\draw[arrow] (task) -- (registry);
+\draw[arrow] (registry) -- (prune);
+\draw[arrow] (prune) -- node[above]{candidate set $\mathcal{S}_q$} (select);
+\draw[arrow] (select) -- (answer);
+\draw[arrow] (risk) -- (select);
+\draw[arrow] (answer.south) |- node[pos=.25, below]{observed $(c,\ell,u)$} (risk.east);
+\end{tikzpicture}}
+\caption{\CBSLAO~as a governance layer around an LLM-agent controller.
+The controller still emits tool calls, but \CBUC~filters the registry
+and sequences calls under explicit budget and deadline chance
+constraints.}
+\label{fig:governance-layer}
+\end{figure}
+
 % ── 6. Contributions ────────────────────────────────────────────────────────
 \paragraph{Contributions.}
 \begin{itemize}
