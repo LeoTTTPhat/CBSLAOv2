@@ -29,7 +29,6 @@ Excellent fit. The schema-typing-aware reduction in Theorem 2 anchors the theore
 ## 4. Weaknesses & Areas for Improvement
 
 1. **Lack of real-world evaluation.** The evaluation is still entirely synthetic. While the calibrated benchmark replay parameterizes the simulator to realistic summary statistics, no live-trace replay is performed. Even a small live-API pilot would have been the final puzzle piece.
-2. **CBUC-L "informal" Proposition.** Proposition 3 remains an informal statement next to tight formal theorems. A minor presentation point.
 
 ## 5. Detailed Comments
 
@@ -43,7 +42,6 @@ Excellent fit. The schema-typing-aware reduction in Theorem 2 anchors the theore
 The authors have addressed almost all prior concerns. I do not expect a rebuttal for the remaining points, which are minor:
 1. **Live-API pilot:** A fundamental construct-validity gap remains without a live tool-calling endpoint, but the synthetic evaluation is exceptionally thorough for what it is.
 2. **Constants flow-through:** Confirming the $\sqrt{2}$ savings flow entirely through to Theorem 6.
-3. **CBUC-L:** Formatting Proposition 3 as a Conjecture would still be cleaner.
 
 ## 7. Recommendation and Scoring
 
