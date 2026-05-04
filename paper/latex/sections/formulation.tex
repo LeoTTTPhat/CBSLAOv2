@@ -1,6 +1,46 @@
 \section{Problem Formulation}
 \label{sec:formulation}
 
+\begin{figure}[t]
+\centering
+\resizebox{0.92\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  >=Latex,
+  node distance=6mm,
+  user/.style={draw=violet!60!black, rounded corners=3pt, thick, align=center,
+               minimum width=110mm, minimum height=11mm, fill=violet!10},
+  cbuc/.style={draw=teal!60!black, rounded corners=4pt, thick, align=center,
+               minimum width=110mm, minimum height=34mm, fill=teal!7},
+  phase/.style={draw=orange!65!black, rounded corners=2pt, thick, align=center,
+                minimum width=44mm, minimum height=15mm, fill=orange!10},
+  reg/.style={draw=black!60, rounded corners=3pt, thick, align=center,
+              minimum width=110mm, minimum height=11mm, fill=black!8},
+  arrow/.style={->, thick, draw=black!65}
+]
+\node[user] (task) {User task: query $q$, budget $B$, deadline $T$, violation tolerance $\delta$};
+\node[cbuc, below=8mm of task] (cbucbox) {};
+\node[anchor=north, font=\bfseries] at ([yshift=-1mm]cbucbox.north) {\CBUC{} governance layer};
+\node[phase, anchor=west] at ([xshift=4mm,yshift=-3mm]cbucbox.west) (prune)
+  {Offline pruning\\\scriptsize Type-closure $\mathsf{cl}(q)$, prune to $\mathcal{S}_q$};
+\node[phase, anchor=east] at ([xshift=-4mm,yshift=-3mm]cbucbox.east) (seq)
+  {Online sequencing\\\scriptsize Budget-aware UCB + chance shrinkage};
+\draw[arrow] (prune) -- (seq);
+\node[reg, below=10mm of cbucbox] (registry) {Tool / service registry: schemas $(\mathsf{In}_i,\mathsf{Out}_i)$, stochastic cost / latency / utility};
+\draw[arrow] (task) -- (cbucbox.north);
+\draw[arrow] ([xshift=-9mm]cbucbox.south) -- ([xshift=-9mm]registry.north)
+  node[midway, left, font=\scriptsize] {invoke $s_{i_t}$};
+\draw[arrow] ([xshift=9mm]registry.north) -- ([xshift=9mm]cbucbox.south)
+  node[midway, right, font=\scriptsize] {observe $c_{i_t},\ell_{i_t},u_{i_t}$};
+\end{tikzpicture}}
+\caption{The \CBUC{} governance layer mediates between the user task
+specification and the tool registry. Offline schema-type pruning and
+online chance-constrained UCB sequencing are its two phases; CBSLAO
+formalises everything that crosses the boundary between the layer and
+the registry.}
+\label{fig:governance-layer}
+\end{figure}
+
 \subsection{Setting}
 Let $\mathcal{S} = \{s_1, \dots, s_n\}$ be a \emph{tool pool}. Each
 tool~$s_i$ exposes a schema
