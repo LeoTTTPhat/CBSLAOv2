@@ -77,8 +77,7 @@ CBSLAO/
 │   ├── ablation_abg.png
 │   ├── ablation_distractors.png
 │   └── ablation_replay.png
-└── paper/
-    └── CBSLAO_paper_draft.md       # Full manuscript draft
+
 ```
 
 ---
