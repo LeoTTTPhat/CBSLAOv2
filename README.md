@@ -1,14 +1,14 @@
-# Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition
+# CBSLAO — Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition
 
-**ICSOC 2026 submission** · Research Track · LNCS format
+**ICSOC 2026 · Research Track · Springer LNCS**
 
-> **CBSLAO** formalizes the problem of orchestrating LLM-agent tool calls under hard budget and SLA constraints, proves it NP-hard, and presents **CBUC** — an online algorithm that reduces budget-overrun rates by **34×** while eliminating deadline misses.
+> **CBSLAO** formalises the problem of orchestrating LLM-agent tool calls under hard budget and SLA constraints, proves it NP-hard with a tight $(1-1/e)$ offline approximation barrier, and presents **CBUC** — an online governance algorithm that reduces budget-overrun rates by **34×** while eliminating deadline misses across 3,960 replicate runs.
 
 ---
 
 ## Introduction
 
-LLM-based agents are increasingly deployed as *service consumers*: they receive a user task, decide which external tools or APIs to invoke, and iterate until the task is satisfied. Frameworks like ReAct, LangChain `AgentExecutor`, the OpenAI Agents SDK, and AutoGen have become the de-facto standard for this pattern — but they were designed for *task success*, not *resource governance*.
+LLM-based agents are increasingly deployed as *service consumers*: they receive a user task, select external tools or APIs, observe returned state, and decide whether another call is worth making. Frameworks like ReAct, Toolformer, Gorilla, HuggingGPT, LangChain `AgentExecutor`, the OpenAI Agents SDK, and AutoGen have become the de-facto standard — but they were designed for *task success*, not *resource governance*.
 
 In practice, three recurring gaps undermine safe deployment:
 
@@ -22,10 +22,12 @@ This work introduces the **Cost- and SLA-Bounded Agent Orchestration (CBSLAO)** 
 
 ### Contributions
 
-- **(C1)** Formal problem statement of CBSLAO with **chance-constrained** budget and deadline semantics, distinguishing adaptive, non-adaptive, and semi-adaptive policy classes.
-- **(C2)** **NP-hardness** of CBSLAO-DEC via reduction from 0/1 Knapsack, holding even when cost distributions are degenerate point masses.
-- **(C3)** **CBUC**, an online algorithm with an $\tilde{O}(\sqrt{KT})$ regret bound against the best feasible non-adaptive policy.
-- **(C4)** A **reproducible simulator** and empirical study across 3,960 replicate runs showing that CBUC reduces budget-overrun by over an order of magnitude while eliminating deadline misses.
+- **(C1)** A schema-aware, chance-constrained **CBSLAO formulation** with budget and deadline semantics, distinguishing adaptive, non-adaptive, and semi-adaptive policy classes.
+- **(C2)** **NP-hardness** of CBSLAO-DEC via reduction from 0/1 Knapsack; a **tight $(1-1/e)$ approximation barrier** via reduction from Max-$k$-Coverage; and an **adaptivity gap** of at least $4/3$ inherited from stochastic knapsack.
+- **(C3)** **CBUC**, an online algorithm with a $\tilde{O}(\sqrt{KT})$ regret bound against the best feasible non-adaptive policy, combining schema-type pruning, budget-aware UCB selection, and chance-constraint resource margins.
+- **(C4)** A **reproducible simulator** and empirical study across 3,960 replicate rows (18 workload cells × 20 seeds × 11 policies) showing that CBUC cuts budget-overrun from 36.9% (ReAct-capped) to 1.1% and eliminates deadline misses.
+
+> Full proofs and secondary ablation studies are provided in the supplementary PDF (`supplementary.md`).
 
 ---
 
@@ -54,6 +56,9 @@ python3 code/cbslao_sim.py out 20 stronger results_stronger.csv
 
 # Regenerate all plots and tables
 python3 code/analyze.py out/results_stronger.csv plots/
+
+# Run all ablation studies
+python3 code/ablations.py out plots/
 ```
 
 ### Repository Structure
@@ -63,22 +68,43 @@ CBSLAO/
 ├── code/
 │   ├── cbslao_sim.py       # Main simulator (pluggable distributions)
 │   ├── analyze.py          # Analysis + plotting
-│   └── ablations.py        # Hyperparameter & replay ablations
+│   └── ablations.py        # Hyperparameter, distractor & replay ablations
 ├── out/
-│   ├── results_stronger.csv        # 3,960-row headline results
+│   ├── results_stronger.csv        # 3,960-row headline results (11 policies)
 │   ├── results.csv                 # Legacy 7-policy sweep (backward compat.)
 │   ├── ablation_abg.csv            # α/β/γ hyperparameter sweep
 │   ├── ablation_distractors.csv    # Distractor tool ablation
 │   └── ablation_replay.csv         # Calibrated-trace replay (BFCL / τ-bench / ToolBench)
 ├── plots/
-│   ├── budget_overrun_vs_rho.png   # Figure 1
-│   ├── utility_vs_rho.png          # Figure 2
-│   ├── scaling_K.png               # Figure 3
-│   ├── ablation_abg.png
-│   ├── ablation_distractors.png
-│   └── ablation_replay.png
-
+│   ├── budget_overrun_vs_rho.png   # Figure 1: overrun vs. ρ
+│   ├── utility_vs_rho.png          # Figure 2: utility vs. ρ
+│   ├── scaling_K.png               # Figure 3: scaling with K
+│   ├── ablation_abg.png            # Ablation: α/β/γ sensitivity
+│   ├── ablation_distractors.png    # Ablation: distractor density
+│   └── ablation_replay.png         # Ablation: benchmark replay
+├── supplementary.md                # Supplementary material (full proofs + ablations)
+└── README.md
 ```
+
+---
+
+## Algorithm Overview: CBUC
+
+CBUC is a resource-governance layer that sits between the LLM-agent controller and the tool/service registry. It has two phases:
+
+1. **Offline pruning** — Compute the schema type-closure $\mathsf{cl}(q)$ from the query and filter the tool pool $\mathcal{S}$ to the subset $\mathcal{S}_q$ whose input schemas are type-compatible. This is complete for feasible non-adaptive policies (Proposition S1) and runs in $O(n|\mathcal{U}|)$ time.
+
+2. **Online sequencing** — Run a budget-aware UCB policy over $\mathcal{S}_q$. At each round, the feasibility filter keeps only tools satisfying:
+
+$$\hat{c}_i + \beta\sqrt{\log t / N_i} \le B_t \quad \text{and} \quad \hat{\ell}_i + \beta\sqrt{\log t / N_i} \le D_t$$
+
+Among feasible tools, select the one maximising the upper-confidence utility-per-cost ratio:
+
+$$\mathsf{UCB}_i(t) = \frac{\hat{u}_i + \alpha\sqrt{\log t / N_i}}{\max(\hat{c}_i - \gamma\sqrt{\log t / N_i},\, c_{\min})}$$
+
+**Regret bound:** Under bounded sub-Gaussian cost, latency, and utility noise, CBUC achieves $\tilde{O}(\sqrt{KT\log T})$ regret against the best feasible non-adaptive policy over $T$ rounds and $K$ candidate tools, with probability at least $1 - \delta - KT^{-2}$.
+
+**Complexity:** $O(K\log K)$ per round; negligible relative to any LLM API call.
 
 ---
 
@@ -91,6 +117,8 @@ The headline evaluation uses a **controlled synthetic simulator** with:
 - Budget tightness $\rho = B / \sum_i \mathbb{E}[c_i] \in \{0.2, 0.5, 1.0\}$
 - Pareto tail index $\alpha \in \{1.5, 2.5\}$
 - **18 workload cells × 20 seeds × 11 policies = 3,960 replicate rows**
+
+Baselines include four status-quo proxies (ReAct-uncapped, ReAct-capped, non-adaptive greedy, BwK-vanilla) and four constraint-aware competitors (Lagrangian primal-dual, CVaR-BwK, Pre-check UCB, CC-knapsack oracle).
 
 ### Headline Results (Table 1)
 
@@ -110,7 +138,7 @@ Results from `out/results_stronger.csv`. Parentheses are approximate 95% CI over
 | CBUC-mod (*z*=0.5) | **0.014** (±0.012) | **0.000** | 0.589 (±0.040) | +0.257 |
 | **CBUC (*z*=1.28, ours)** | **0.011** (±0.011) | **0.000** | 0.587 (±0.040) | +0.259 |
 
-> **Key takeaway:** Among deployable policies, CBUC cuts budget-overrun **34× vs. ReAct-capped** and **26× vs. BwK-vanilla**, while achieving **zero deadline misses** across all 360 runs. This safety guarantee comes at a utility cost (~0.15 vs. BwK-vanilla), positioning CBUC as the conservative high-assurance point on the safety–utility frontier.
+> **Key takeaway:** CBUC is the *only* policy in the sweep to simultaneously keep both budget-overrun and deadline-miss below 2%. This safety guarantee comes at a utility cost (~0.15 vs. BwK-vanilla), positioning CBUC as the conservative high-assurance point on the safety–utility frontier. The Lagrangian baseline recovers the most utility (0.806) but accepts 23.1% budget overrun.
 
 ---
 
@@ -138,6 +166,28 @@ BwK-vanilla improves with larger K (more arms → more exploration headroom) but
 
 ---
 
+### Safety–Utility Frontier
+
+The headline results condense into a single operating-choice plot: lower points violate budget less often, while rightward points recover more utility. CBUC occupies the high-assurance region; Lagrangian control recovers utility while accepting much higher budget risk. Pre-check UCB is the closest deployable competitor on safety but lacks the chance-margin correction.
+
+---
+
+### Ablation: Hyperparameter Sensitivity (α, β, γ)
+
+![Hyperparameter sensitivity across α, β, γ settings](plots/ablation_abg.png)
+
+CBUC achieves **zero budget-overrun** across all tested hyperparameter values, with utility ranging from 0.519 to 0.852. The default settings (α=1.0, β=1.5, γ=1.5) were fixed before the final sweep.
+
+---
+
+### Ablation: Distractor Tools
+
+![Distractor tool ablation](plots/ablation_distractors.png)
+
+The type-closure offline pruning phase of CBUC is robust to the presence of irrelevant ("distractor") tools in the registry, maintaining zero overrun rates even as the fraction of distractors increases to 90%.
+
+---
+
 ### Ablation: Replay on Calibrated Traces
 
 CBUC is also evaluated on traces calibrated to three public tool-use benchmarks:
@@ -156,35 +206,21 @@ CBUC is also evaluated on traces calibrated to three public tool-use benchmarks:
 
 ![Replay ablation across calibrated trace profiles](plots/ablation_replay.png)
 
----
-
-### Ablation: Hyperparameter Sensitivity (α, β, γ)
-
-![Hyperparameter sensitivity across α, β, γ settings](plots/ablation_abg.png)
-
-CBUC achieves **zero budget-overrun** across all tested hyperparameter values, with utility ranging from 0.519 to 0.852. The default settings (α=1.0, β=1.5, γ=1.5) were fixed before the final sweep.
+*Caveat*: These are parameterised simulations calibrated to published summary statistics, not live API trace replays.
 
 ---
 
-### Ablation: Distractor Tools
+## Theoretical Landscape
 
-![Distractor tool ablation](plots/ablation_distractors.png)
+| Result | Statement | Proof |
+|---|---|---|
+| NP-hardness | CBSLAO-DEC is NP-hard even with deterministic costs | Reduction from 0/1 Knapsack |
+| Approximation barrier | No poly-time $(1-1/e+\varepsilon)$-approx unless P=NP | Reduction from Max-$k$-Coverage |
+| Matching upper bound | Offline greedy achieves $(1-1/e)$ for monotone submodular utility | Sviridenko's modified greedy |
+| Adaptivity gap | $\geq 4/3$; bounded by constant | Dean–Goemans–Vondrak stochastic knapsack |
+| Regret bound | $\tilde{O}(\sqrt{KT})$ against best feasible non-adaptive policy | Four-lemma layering (L1–L4) |
 
-The type-closure offline pruning phase of CBUC is robust to the presence of irrelevant ("distractor") tools in the registry, maintaining low overrun rates even as the fraction of distractors increases.
-
----
-
-## Algorithm Overview: CBUC
-
-CBUC has two phases:
-
-1. **Offline pruning** — Filter the tool pool $\mathcal{S}$ to the subset $\mathcal{S}_q$ whose input schemas are type-compatible with the query. This is complete for feasible non-adaptive policies (Proposition 5) and runs in $O(n |\mathcal{U}|)$ time.
-
-2. **Online sequencing** — Run a budget-aware UCB policy over $\mathcal{S}_q$. At each round, select the tool maximizing the upper-confidence utility-per-cost ratio, while enforcing a chance-constraint feasibility check before each invocation.
-
-**Regret bound:** Under bounded sub-Gaussian cost, latency, and utility noise, CBUC achieves $\tilde{O}(\sqrt{KT \log T})$ regret against the best feasible non-adaptive policy over $T$ rounds and $K$ candidate tools.
-
-**Complexity:** $O(K \log K)$ per round; negligible relative to any LLM API call.
+Full proofs are given in the supplementary material (`supplementary.md`).
 
 ---
 
@@ -199,7 +235,7 @@ python3 code/cbslao_sim.py out 20 stronger results_stronger.csv
 # Plots and tables
 python3 code/analyze.py out/results_stronger.csv plots/
 
-# Ablations
+# All ablation studies (A1: α/β/γ, A2: distractors, A3: benchmark replay)
 python3 code/ablations.py out plots/
 ```
 
