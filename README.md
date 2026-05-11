@@ -45,7 +45,7 @@ pip install numpy pandas matplotlib scipy
 ### Clone & Run
 
 ```bash
-git clone https://github.com/LeoTTTPhat/CBSLAO.git
+git clone <GitHub_REPOS_URL>
 cd CBSLAO
 
 # Run the full extended sweep (18 workload cells × 20 seeds × 11 policies = 3,960 rows)
@@ -191,7 +191,7 @@ CBUC has two phases:
 
 ## Reproducibility
 
-All results are fully reproducible from a clean checkout in under **3 minutes** on a single CPU core:
+All results are fully reproducible from a clean checkout on a single CPU core:
 
 ```bash
 # Headline Table 1 (results_stronger.csv — 3,960 rows)
@@ -205,21 +205,6 @@ python3 code/ablations.py out plots/
 ```
 
 Seeds are derived deterministically from sweep coordinates. No proprietary LLM API is required.
-
----
-
-## Citation
-
-If you use this work, please cite:
-
-```bibtex
-@inproceedings{cbslao2026,
-  title     = {Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition},
-  booktitle = {Proceedings of the 24th International Conference on Service-Oriented Computing (ICSOC)},
-  year      = {2026},
-  note      = {To appear}
-}
-```
 
 ---
 
