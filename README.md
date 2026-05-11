@@ -27,7 +27,9 @@ This work introduces the **Cost- and SLA-Bounded Agent Orchestration (CBSLAO)** 
 - **(C3)** **CBUC**, an online algorithm with a $\tilde{O}(\sqrt{KT})$ regret bound against the best feasible non-adaptive policy, combining schema-type pruning, budget-aware UCB selection, and chance-constraint resource margins.
 - **(C4)** A **reproducible simulator** and empirical study across 3,960 replicate rows (18 workload cells × 20 seeds × 11 policies) showing that CBUC cuts budget-overrun from 36.9% (ReAct-capped) to 1.1% and eliminates deadline misses.
 
-> Full proofs and secondary ablation studies are provided in the supplementary PDF (`supplementary.md`).
+> Full proofs and secondary ablation studies are provided in the supplementary PDF
+> (`submission/paper/latex/supplement.pdf`), with LaTeX source in
+> `submission/paper/latex/supplement.tex`.
 
 ---
 
@@ -82,7 +84,11 @@ CBSLAO/
 │   ├── ablation_abg.png            # Ablation: α/β/γ sensitivity
 │   ├── ablation_distractors.png    # Ablation: distractor density
 │   └── ablation_replay.png         # Ablation: benchmark replay
-├── supplementary.md                # Supplementary material (full proofs + ablations)
+├── submission/
+│   └── paper/latex/
+│       ├── main.tex                # Anonymous LNCS submission source
+│       ├── supplement.tex          # Supplement LaTeX source
+│       └── supplement.pdf          # Supplementary material PDF
 └── README.md
 ```
 
@@ -220,7 +226,9 @@ CBUC is also evaluated on traces calibrated to three public tool-use benchmarks:
 | Adaptivity gap | $\geq 4/3$; bounded by constant | Dean–Goemans–Vondrak stochastic knapsack |
 | Regret bound | $\tilde{O}(\sqrt{KT})$ against best feasible non-adaptive policy | Four-lemma layering (L1–L4) |
 
-Full proofs are given in the supplementary material (`supplementary.md`).
+Full proofs are given in the supplementary material
+(`submission/paper/latex/supplement.pdf`; source:
+`submission/paper/latex/supplement.tex`).
 
 ---
 
