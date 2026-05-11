@@ -1,0 +1,97 @@
+% Full-proof supplement for CBSLAO.
+% This file is intentionally rooted at the repository top level so that
+% supplement.pdf can sit beside README.md for artifact upload.
+%
+% Build, when a TeX distribution is available:
+%   pdflatex supplement
+%   bibtex supplement
+%   pdflatex supplement
+%   pdflatex supplement
+
+\documentclass[11pt]{article}
+
+\usepackage{fontspec}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+\usepackage{graphicx}
+\graphicspath{{paper/latex/figures/}{plots/}}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{caption}
+\captionsetup{font=small}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,
+            linkcolor=blue!60!black,
+            citecolor=blue!60!black,
+            urlcolor=blue!60!black]{hyperref}
+\usepackage{url}
+
+% The source sections contain a few TikZ figures. They are retained for
+% completeness, but the proof text and formulas do not depend on them.
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.16}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\CBSLAO}{\textsc{CBSLAO}}
+\newcommand{\CBUC}{\textsc{CBUC}}
+\newcommand{\BwK}{\textsc{BwK}}
+\newcommand{\ReAct}{\textsc{ReAct}}
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\tOh}{\widetilde{\mathcal{O}}}
+\newcommand{\Ex}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{Supplementary Material: Full Proofs for\\
+Cost- and SLA-Bounded Orchestration for LLM-Agent Tool/Service Composition}
+\author{Anonymous}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This supplement collects the formal problem statement and all
+theorem-like claims from the paper source under
+\texttt{paper/latex/sections}, with the corresponding full proofs or
+proof sketches preserved in \LaTeX{} form. It is meant to compile to
+the root-level \texttt{supplement.pdf} referenced by the repository
+README.
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\input{paper/latex/sections/formulation}
+\input{paper/latex/sections/hardness}
+\input{paper/latex/sections/algorithm}
+
+% The appendix file contains the detailed proof of Theorem~\ref{thm:regret}
+% followed by ablation studies. Both are included here because the main paper
+% points readers to the supplement for full proofs and secondary ablations.
+\input{paper/latex/sections/appendix}
+
+\bibliographystyle{plain}
+\bibliography{paper/latex/references}
+
+\end{document}
